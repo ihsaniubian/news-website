@@ -1,107 +1,52 @@
 "use client";
-
 import { useState } from "react";
 
-export default function AdminPage() {
-  const [title, setTitle] = useState("");
-  const [summary, setSummary] = useState("");
-  const [content, setContent] = useState("");
-  const [author, setAuthor] = useState("Admin");
-  const [category, setCategory] = useState("Pakistan");
+export default function AddNews() {
+  const [form, setForm] = useState({
+    title: "", slug: "", summary: "", content: "",
+    category: "pakistan", imageUrl: "", source: "",
+  });
+  const [status, setStatus] = useState("");
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    setStatus("Saving...");
     const res = await fetch("/api/news", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title,
-        summary,
-        content,
-        author,
-        category,
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
     });
-
-    if (res.ok) {
-      alert("News Added Successfully!");
-
-      setTitle("");
-      setSummary("");
-      setContent("");
-      setAuthor("Admin");
-      setCategory("Pakistan");
-    } else {
-      alert("Failed to add news");
-    }
-  }
+    const data = await res.json();
+    setStatus(data.success ? "News added!" : "Error: " + data.error);
+  };
 
   return (
-    <main style={{ padding: "20px", maxWidth: "700px", margin: "auto" }}>
-      <h1>Khabarnama Admin Panel</h1>
-
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="News Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-        />
-
-        <input
-          type="text"
-          placeholder="News Summary"
-          value={summary}
-          onChange={(e) => setSummary(e.target.value)}
-          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-        />
-
-        <input
-          type="text"
-          placeholder="Author"
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-        />
-
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-        >
-          <option value="Pakistan">Pakistan</option>
-          <option value="World">World</option>
-          <option value="Politics">Politics</option>
-          <option value="Sports">Sports</option>
-          <option value="Business">Business</option>
-        </select>
-
-        <textarea
-          placeholder="News Content"
-          rows={8}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-        />
-
-        <button
-          type="submit"
-          style={{
-            width: "100%",
-            padding: "12px",
-            background: "#000",
-            color: "#fff",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          Publish News
-        </button>
-      </form>
-    </main>
+    <form onSubmit={handleSubmit} className="max-w-xl mx-auto p-6 space-y-4">
+      <input placeholder="Title" className="w-full border p-2 rounded"
+        onChange={(e) => setForm({ ...form, title: e.target.value })} />
+      <input placeholder="Slug (url-friendly)" className="w-full border p-2 rounded"
+        onChange={(e) => setForm({ ...form, slug: e.target.value })} />
+      <textarea placeholder="Summary" className="w-full border p-2 rounded"
+        onChange={(e) => setForm({ ...form, summary: e.target.value })} />
+      <textarea placeholder="Full Content" rows={6} className="w-full border p-2 rounded"
+        onChange={(e) => setForm({ ...form, content: e.target.value })} />
+      <select className="w-full border p-2 rounded"
+        onChange={(e) => setForm({ ...form, category: e.target.value })}>
+        <option value="pakistan">Pakistan</option>
+        <option value="world">World</option>
+        <option value="sports">Sports</option>
+        <option value="business">Business</option>
+        <option value="tech">Tech</option>
+        <option value="entertainment">Entertainment</option>
+      </select>
+      <input placeholder="Image URL" className="w-full border p-2 rounded"
+        onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} />
+      <input placeholder="Source" className="w-full border p-2 rounded"
+        onChange={(e) => setForm({ ...form, source: e.target.value })} />
+      <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
+        Publish News
+      </button>
+      <p>{status}</p>
+    </form>
   );
 }
