@@ -3,33 +3,56 @@ import dbConnect from "@/lib/mongodb";
 import News from "@/models/News";
 
 function generateSlug(title: string) {
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
+  return (
+    title
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-") +
+    "-" +
+    Date.now().toString().slice(-5)
+  );
 }
 
-export async function POST(req: NextRequest) {
+// GET - Get all news
+export async function GET() {
   try {
     await dbConnect();
-    const body = await req.json();
 
-    if (!body.slug && body.title) {
-      body.slug = generateSlug(body.title) + "-" + Date.now().toString().slice(-5);
-    }
+    const news = await News.find().sort({ createdAt: -1 });
 
-    const news = await News.create(body);
-    return NextResponse.json({ success: true, news });
-  } catch (err) {
-    console.error("News creation error:", err);
-    return NextResponse.json({ success: false, error: err instanceof Error ? err.message : "Unknown error" }, { status: 400 });
+    return NextResponse.json(news, { status: 200 });
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Internal Server Error";
+
+    return NextResponse.json({ message }, { status: 500 });
   }
 }
 
-export async function GET() {
-  await dbConnect();
-  const news = await News.find().sort({ createdAt: -1 });
-  return NextResponse.json({ success: true, news });
+// POST - Add news
+export async function POST(req: NextRequest) {
+  try {
+    await dbConnect();
+
+    const body = await req.json();
+
+    const newNews = await News.create({
+      title: body.title,
+      slug: body.slug || generateSlug(body.title),
+      summary: body.summary || "",
+      content: body.content,
+      category: body.category,
+      imageUrl: body.image || body.imageUrl || "",
+      author: body.author || "Admin",
+    });
+
+    return NextResponse.json(newNews, { status: 201 });
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Internal Server Error";
+
+    return NextResponse.json({ message }, { status: 500 });
+  }
 }
