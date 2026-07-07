@@ -7,6 +7,12 @@ const NewsSchema = new mongoose.Schema(
       required: true,
     },
 
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+
     summary: {
       type: String,
       default: "",
@@ -22,7 +28,12 @@ const NewsSchema = new mongoose.Schema(
       required: true,
     },
 
-    image: {
+    imageUrl: {
+      type: String,
+      default: "",
+    },
+
+    source: {
       type: String,
       default: "",
     },
