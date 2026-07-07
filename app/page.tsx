@@ -1,55 +1,6 @@
 import Link from "next/link";
-
-const pakistan = [
-  {
-    title: "Govt announces new digital tax policy for freelancers",
-    summary:
-      "The federal government has unveiled a new framework aimed at formalizing income from online freelance work.",
-    category: "Business",
-    time: "2 hours ago",
-  },
-  {
-    title: "Heatwave alert issued across Punjab and Sindh",
-    summary:
-      "Meteorological department warns of temperatures crossing 45°C in major cities this week.",
-    category: "Weather",
-    time: "4 hours ago",
-  },
-  {
-    title: "PSL franchise announces new training academy",
-    summary:
-      "A new cricket academy aimed at grassroots talent will open in three major cities.",
-    category: "Sports",
-    time: "6 hours ago",
-  },
-];
-
-const world = [
-  {
-    title: "Global tech firms announce joint AI safety pact",
-    country: "USA",
-    category: "Technology",
-    time: "1 hour ago",
-  },
-  {
-    title: "New trade corridor agreement signed between regional blocs",
-    country: "India",
-    category: "Business",
-    time: "3 hours ago",
-  },
-  {
-    title: "Gulf states expand visa-free travel arrangements",
-    country: "UAE",
-    category: "Politics",
-    time: "5 hours ago",
-  },
-  {
-    title: "European energy ministers meet over winter supply plans",
-    country: "UK",
-    category: "Politics",
-    time: "7 hours ago",
-  },
-];
+import dbConnect from "@/lib/mongodb";
+import News from "@/models/News";
 
 const ticker = [
   "Markets open higher amid global rally",
@@ -58,7 +9,25 @@ const ticker = [
   "Regional trade talks resume after brief pause",
 ];
 
-export default function Home() {
+interface NewsItem {
+  _id: string;
+  title: string;
+  slug: string;
+  summary: string;
+  category: string;
+  imageUrl?: string;
+  createdAt: string;
+}
+
+async function getLatestNews(): Promise<NewsItem[]> {
+  await dbConnect();
+  const news = await News.find().sort({ createdAt: -1 }).limit(12).lean();
+  return JSON.parse(JSON.stringify(news));
+}
+
+export default async function Home() {
+  const newsList = await getLatestNews();
+
   return (
     <div className="min-h-screen">
 
@@ -92,16 +61,44 @@ export default function Home() {
         </div>
       </header>
 
-     <main className="max-w-6xl mx-auto px-6 py-10">
-  <h1 className="text-4xl font-bold mb-8">
-    Khabarnama
-  </h1>
+      <main className="max-w-6xl mx-auto px-6 py-10">
+        <h1 className="text-4xl font-bold mb-8">
+          Khabarnama
+        </h1>
 
-  <p className="mb-8 text-gray-400">
-    Latest News from Pakistan and Around the World
-  </p>
-</main>
-<footer className="border-t border-[var(--color-border)] mt-12">
+        <p className="mb-8 text-gray-400">
+          Latest News from Pakistan and Around the World
+        </p>
+
+        {newsList.length === 0 ? (
+          <p className="text-gray-500">No news published yet.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {newsList.map((item) => (
+              <Link
+                key={item._id}
+                href={`/news/${item.slug}`}
+                className="block border border-[var(--color-border)] rounded-lg p-4 hover:border-[var(--color-accent)] transition"
+              >
+                {item.imageUrl && (
+                  <img
+                    src={item.imageUrl}
+                    alt={item.title}
+                    className="w-full h-40 object-cover rounded mb-3"
+                  />
+                )}
+                <span className="text-xs uppercase text-[var(--color-accent)]">
+                  {item.category}
+                </span>
+                <h2 className="font-bold text-lg mt-1">{item.title}</h2>
+                <p className="text-sm text-gray-400 mt-2">{item.summary}</p>
+              </Link>
+            ))}
+          </div>
+        )}
+      </main>
+
+      <footer className="border-t border-[var(--color-border)] mt-12">
         <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center">
           <p>© 2026 Khabarnama. All rights reserved.</p>
 
