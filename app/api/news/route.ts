@@ -1,31 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "@/lib/mongodb";
+import connectDB from "@/lib/mongodb";
 import News from "@/models/News";
 
-// GET - Get all news
 export async function GET() {
   try {
-    await dbConnect();
+    await connectDB();
 
     const news = await News.find().sort({ createdAt: -1 });
 
     return NextResponse.json(news, { status: 200 });
   } catch (error: unknown) {
+    console.error("GET ERROR:", error);
+
     const message =
-      error instanceof Error ? error.message : "Internal Server Error";
+      error instanceof Error ? error.message : "Unknown error";
 
     return NextResponse.json({ message }, { status: 500 });
   }
 }
 
-// POST - Add news
 export async function POST(req: NextRequest) {
   try {
-    await dbConnect();
+    await connectDB();
 
     const body = await req.json();
 
-    const newNews = await News.create({
+    const news = await News.create({
       title: body.title,
       summary: body.summary || "",
       content: body.content,
@@ -34,11 +34,19 @@ export async function POST(req: NextRequest) {
       author: body.author || "Admin",
     });
 
-    return NextResponse.json(newNews, { status: 201 });
+    return NextResponse.json(news, { status: 201 });
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "Internal Server Error";
+    console.error("POST ERROR:", error);
 
-    return NextResponse.json({ message }, { status: 500 });
+    const message =
+      error instanceof Error ? error.message : "Unknown error";
+
+    return NextResponse.json(
+      {
+        success: false,
+        message,
+      },
+      { status: 500 }
+    );
   }
 }

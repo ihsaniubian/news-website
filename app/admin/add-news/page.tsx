@@ -11,27 +11,35 @@ export default function AddNewsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const res = await fetch("/api/news", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title,
-        summary,
-        content,
-        category,
-      }),
-    });
+    try {
+      const res = await fetch("/api/news", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+          summary,
+          content,
+          category,
+        }),
+      });
 
-    if (res.ok) {
-      alert("News Added Successfully!");
-      setTitle("");
-      setSummary("");
-      setContent("");
-      setCategory("");
-    } else {
-      alert("Failed to add news");
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("News Added Successfully!");
+
+        setTitle("");
+        setSummary("");
+        setContent("");
+        setCategory("");
+      } else {
+        alert(data.message || "Failed to add news");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong!");
     }
   };
 
@@ -46,7 +54,11 @@ export default function AddNewsPage() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+          style={{
+            width: "100%",
+            padding: "10px",
+            marginBottom: "10px",
+          }}
         />
 
         <input
@@ -54,7 +66,11 @@ export default function AddNewsPage() {
           placeholder="Summary"
           value={summary}
           onChange={(e) => setSummary(e.target.value)}
-          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+          style={{
+            width: "100%",
+            padding: "10px",
+            marginBottom: "10px",
+          }}
         />
 
         <input
@@ -63,7 +79,11 @@ export default function AddNewsPage() {
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           required
-          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+          style={{
+            width: "100%",
+            padding: "10px",
+            marginBottom: "10px",
+          }}
         />
 
         <textarea
@@ -72,10 +92,22 @@ export default function AddNewsPage() {
           onChange={(e) => setContent(e.target.value)}
           rows={8}
           required
-          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+          style={{
+            width: "100%",
+            padding: "10px",
+            marginBottom: "10px",
+          }}
         />
 
-        <button type="submit">Publish News</button>
+        <button
+          type="submit"
+          style={{
+            padding: "10px 20px",
+            cursor: "pointer",
+          }}
+        >
+          Publish News
+        </button>
       </form>
     </main>
   );
