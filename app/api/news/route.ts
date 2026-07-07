@@ -22,9 +22,9 @@ export async function POST(req: NextRequest) {
 
     const news = await News.create(body);
     return NextResponse.json({ success: true, news });
-  } catch (err: any) {
+  } catch (err) {
     console.error("News creation error:", err);
-    return NextResponse.json({ success: false, error: err.message }, { status: 400 });
+    return NextResponse.json({ success: false, error: err instanceof Error ? err.message : "Unknown error" }, { status: 400 });
   }
 }
 
