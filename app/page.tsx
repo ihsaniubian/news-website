@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-const pakistanNews = [
+const pakistan = [
   {
     title: "Govt announces new digital tax policy for freelancers",
     summary:
@@ -24,7 +24,7 @@ const pakistanNews = [
   },
 ];
 
-const worldNews = [
+const world = [
   {
     title: "Global tech firms announce joint AI safety pact",
     country: "USA",
