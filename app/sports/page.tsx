@@ -21,7 +21,9 @@ interface NewsItem {
 
 async function getNewsByCategory(category: string): Promise<NewsItem[]> {
   await dbConnect();
-  const news = await News.find({ category }).sort({ createdAt: -1 }).lean();
+  const news = await News.find({ 
+    category: { $regex: new RegExp(`^${category}$`, "i") } 
+  }).sort({ createdAt: -1 }).lean();
   return JSON.parse(JSON.stringify(news));
 }
 
