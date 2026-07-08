@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'; // <--- Yeh line Business page par bhi live data fetch karegi
+
 import Link from "next/link";
 import dbConnect from "@/lib/mongodb";
 import News from "@/models/News";
@@ -21,8 +23,8 @@ interface NewsItem {
 
 async function getNewsByCategory(category: string): Promise<NewsItem[]> {
   await dbConnect();
-  const news = await News.find({ 
-    category: { $regex: new RegExp(`^${category}$`, "i") } 
+  const news = await News.find({
+    category: { $regex: new RegExp(`^${category}$`, "i") },
   }).sort({ createdAt: -1 }).lean();
   return JSON.parse(JSON.stringify(news));
 }
@@ -32,6 +34,7 @@ export default async function BusinessPage() {
 
   return (
     <div className="min-h-screen">
+      {/* Ticker */}
       <div className="bg-[var(--color-accent)] text-black overflow-hidden whitespace-nowrap py-2">
         <div className="inline-block animate-marquee font-[family-name:var(--font-mono)] text-sm font-medium">
           {ticker.map((item, i) => (
@@ -42,6 +45,7 @@ export default async function BusinessPage() {
         </div>
       </div>
 
+      {/* Header */}
       <header className="border-b border-[var(--color-border)] sticky top-0 bg-[var(--color-bg)]/95 backdrop-blur z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold">
@@ -59,9 +63,10 @@ export default async function BusinessPage() {
         </div>
       </header>
 
+      {/* Main Content */}
       <main className="max-w-6xl mx-auto px-6 py-10">
         <h1 className="text-4xl font-bold mb-2">Business</h1>
-        <p className="mb-8 text-gray-400">Latest business news</p>
+        <p className="mb-8 text-gray-400">Latest business and market updates</p>
 
         {newsList.length === 0 ? (
           <p className="text-gray-500">No news published in this category yet.</p>
@@ -91,6 +96,7 @@ export default async function BusinessPage() {
         )}
       </main>
 
+      {/* Footer */}
       <footer className="border-t border-[var(--color-border)] mt-12">
         <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center">
           <p>© 2026 Khabarnama. All rights reserved.</p>

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'; // <--- Yeh line ab Pakistan page par bhi live data fetch karegi
+
 import Link from "next/link";
 import dbConnect from "@/lib/mongodb";
 import News from "@/models/News";
@@ -32,6 +34,7 @@ export default async function PakistanPage() {
 
   return (
     <div className="min-h-screen">
+      {/* Ticker */}
       <div className="bg-[var(--color-accent)] text-black overflow-hidden whitespace-nowrap py-2">
         <div className="inline-block animate-marquee font-[family-name:var(--font-mono)] text-sm font-medium">
           {ticker.map((item, i) => (
@@ -42,6 +45,7 @@ export default async function PakistanPage() {
         </div>
       </div>
 
+      {/* Header */}
       <header className="border-b border-[var(--color-border)] sticky top-0 bg-[var(--color-bg)]/95 backdrop-blur z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold">
@@ -59,6 +63,7 @@ export default async function PakistanPage() {
         </div>
       </header>
 
+      {/* Main Content */}
       <main className="max-w-6xl mx-auto px-6 py-10">
         <h1 className="text-4xl font-bold mb-2">Pakistan</h1>
         <p className="mb-8 text-gray-400">Latest news from Pakistan</p>
@@ -91,6 +96,7 @@ export default async function PakistanPage() {
         )}
       </main>
 
+      {/* Footer */}
       <footer className="border-t border-[var(--color-border)] mt-12">
         <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center">
           <p>© 2026 Khabarnama. All rights reserved.</p>
