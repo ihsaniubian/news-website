@@ -2,6 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import News from "@/models/News";
 
+function generateSlug(title: string) {
+  return (
+    title
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-") +
+    "-" +
+    Date.now().toString().slice(-5)
+  );
+}
+
 export async function GET() {
   try {
     await connectDB();
@@ -30,7 +43,7 @@ export async function POST(req: NextRequest) {
 
     const news = await News.create({
       title: body.title,
-      slug: body.slug,
+      slug: body.slug || generateSlug(body.title),
       summary: body.summary || "",
       content: body.content,
       category: body.category,
