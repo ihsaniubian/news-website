@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import Link from "next/link";
 import dbConnect from "@/lib/mongodb";
 import News from "@/models/News";
+import SearchBar from "@/components/SearchBar"; // Line 6 fix ke sath
 
 const ticker = [
   "Markets open higher amid global rally",
@@ -21,7 +22,6 @@ interface NewsItem {
   createdAt: string;
 }
 
-// Yeh query bina kisi filter ke saari categories ka latest data uthayegi
 async function getLatestNews(): Promise<NewsItem[]> {
   await dbConnect();
   const news = await News.find({}) 
@@ -48,16 +48,15 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* Header */}
+      {/* Header with SearchBar */}
       <header className="border-b border-[var(--color-border)] sticky top-0 bg-[var(--color-bg)]/95 backdrop-blur z-50">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+          <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold shrink-0">
             Khabar
             <span className="text-[var(--color-accent)]">nama</span>
           </h1>
 
-          {/* Dynamic Category Optimization ke mutabiq Links badal diye hain */}
-          <nav className="hidden md:flex gap-6">
+          <nav className="hidden md:flex gap-6 items-center">
             <Link href="/">Home</Link>
             <Link href="/category/pakistan">Pakistan</Link>
             <Link href="/category/world">World</Link>
@@ -65,17 +64,15 @@ export default async function Home() {
             <Link href="/category/sports">Sports</Link>
             <Link href="/category/business">Business</Link>
           </nav>
+
+          {/* Search Bar Integration */}
+          <SearchBar />
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-10">
-        <h1 className="text-4xl font-bold mb-8">
-          Khabarnama
-        </h1>
-
-        <p className="mb-8 text-gray-400">
-          Latest News from Pakistan and Around the World
-        </p>
+        <h1 className="text-4xl font-bold mb-8">Khabarnama</h1>
+        <p className="mb-8 text-gray-400">Latest News from Pakistan and Around the World</p>
 
         {newsList.length === 0 ? (
           <p className="text-gray-500">No news published yet.</p>
@@ -108,7 +105,6 @@ export default async function Home() {
       <footer className="border-t border-[var(--color-border)] mt-12">
         <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center">
           <p>© 2026 Khabarnama. All rights reserved.</p>
-
           <div className="flex gap-5 mt-4 md:mt-0">
             <Link href="/">Home</Link>
             <Link href="/category/pakistan">Pakistan</Link>

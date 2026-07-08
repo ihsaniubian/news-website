@@ -1,8 +1,9 @@
-export const dynamic = 'force-dynamic'; // Har category ka live data lane ke liye
+export const dynamic = 'force-dynamic'; 
 
 import Link from "next/link";
 import dbConnect from "@/lib/mongodb";
 import News from "@/models/News";
+import SearchBar from "@/components/SearchBar"; // Line 6 fix ke sath
 
 const ticker = [
   "Markets open higher amid global rally",
@@ -27,7 +28,6 @@ interface PageProps {
 
 async function getNewsByCategory(category: string): Promise<NewsItem[]> {
   await dbConnect();
-  // URL se jo bhi name aayega, yeh query use database se case-insensitive match karegi
   const news = await News.find({
     category: { $regex: new RegExp(`^${category}$`, "i") },
   }).sort({ createdAt: -1 }).lean();
@@ -37,12 +37,11 @@ async function getNewsByCategory(category: string): Promise<NewsItem[]> {
 export default async function DynamicCategoryPage({ params }: PageProps) {
   const resolvedParams = await params;
   const currentCategory = resolvedParams.categoryName;
-  
-  // Database se dynamic category ka data fetch ho raha hai
   const newsList = await getNewsByCategory(currentCategory);
 
   return (
     <div className="min-h-screen">
+
       {/* Ticker */}
       <div className="bg-[var(--color-accent)] text-black overflow-hidden whitespace-nowrap py-2">
         <div className="inline-block animate-marquee font-[family-name:var(--font-mono)] text-sm font-medium">
@@ -54,14 +53,15 @@ export default async function DynamicCategoryPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Header */}
+      {/* Header with SearchBar */}
       <header className="border-b border-[var(--color-border)] sticky top-0 bg-[var(--color-bg)]/95 backdrop-blur z-50">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+          <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold shrink-0">
             Khabar
             <span className="text-[var(--color-accent)]">nama</span>
           </h1>
-          <nav className="hidden md:flex gap-6 capitalize">
+
+          <nav className="hidden md:flex gap-6 items-center capitalize">
             <Link href="/">Home</Link>
             <Link href="/category/pakistan">Pakistan</Link>
             <Link href="/category/world">World</Link>
@@ -69,10 +69,12 @@ export default async function DynamicCategoryPage({ params }: PageProps) {
             <Link href="/category/sports">Sports</Link>
             <Link href="/category/business">Business</Link>
           </nav>
+
+          {/* Search Bar Integration */}
+          <SearchBar />
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-6xl mx-auto px-6 py-10">
         <h1 className="text-4xl font-bold mb-2 capitalize">{currentCategory}</h1>
         <p className="mb-8 text-gray-400">Latest news and updates from {currentCategory}</p>
@@ -105,7 +107,6 @@ export default async function DynamicCategoryPage({ params }: PageProps) {
         )}
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-[var(--color-border)] mt-12">
         <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center">
           <p>© 2026 Khabarnama. All rights reserved.</p>
