@@ -17,7 +17,7 @@ export default function SearchBar() {
   const [loading, setLoading] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
-  // Bahar click karne par dropdown close karne ke liye
+  // External click handler to close dropdown
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -28,13 +28,9 @@ export default function SearchBar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Debounce backend API calls (Fixed strict rule issue)
+  // Debounced API call without state setting conflicts
   useEffect(() => {
     if (query.trim().length < 2) {
-      // Vercel strict error ko avoid karne ke liye state update conditional handle ki
-      if (results.length > 0) {
-        setResults([]);
-      }
       return;
     }
 
@@ -55,7 +51,16 @@ export default function SearchBar() {
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [query, results.length]); // Added results.length dependency to satisfy linter safely
+  }, [query]);
+
+  // Handle input changes and safely clean results if query is short
+  const handleInputChange = (val: string) => {
+    setQuery(val);
+    if (val.trim().length < 2) {
+      setResults([]);
+      setIsOpen(false);
+    }
+  };
 
   return (
     <div ref={searchRef} className="relative w-full max-w-xs md:max-w-sm">
@@ -64,7 +69,7 @@ export default function SearchBar() {
           type="text"
           placeholder="Search news..."
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => handleInputChange(e.target.value)}
           onFocus={() => query.trim().length >= 2 && setIsOpen(true)}
           className="w-full bg-[var(--color-bg)] text-white placeholder-gray-400 border border-[var(--color-border)] rounded-full px-4 py-1.5 text-sm focus:outline-none focus:border-[var(--color-accent)] transition"
         />
