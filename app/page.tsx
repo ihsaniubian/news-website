@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'; 
+
 import Link from "next/link";
 import dbConnect from "@/lib/mongodb";
 import News from "@/models/News";
@@ -19,19 +21,23 @@ interface NewsItem {
   createdAt: string;
 }
 
-async function getNewsByCategory(category: string): Promise<NewsItem[]> {
+// Yeh query bina kisi filter ke saari categories (Pakistan, World, Sports etc.) ka latest data uthayegi
+async function getLatestNews(): Promise<NewsItem[]> {
   await dbConnect();
-  const news = await News.find({
-    category: { $regex: new RegExp(`^${category}$`, "i") },
-  }).sort({ createdAt: -1 }).lean();
+  const news = await News.find({}) // {} Matlab bina kisi filter ke saara data fetch hoga
+    .sort({ createdAt: -1 })       // Naye documents sabse pehle aayenge
+    .limit(20)                     // Taake agar zyada news hon toh top 20 mix show hon
+    .lean();
   return JSON.parse(JSON.stringify(news));
 }
 
-export default async function PakistanPage() {
-  const newsList = await getNewsByCategory("Pakistan");
+export default async function Home() {
+  const newsList = await getLatestNews();
 
   return (
     <div className="min-h-screen">
+
+      {/* Ticker */}
       <div className="bg-[var(--color-accent)] text-black overflow-hidden whitespace-nowrap py-2">
         <div className="inline-block animate-marquee font-[family-name:var(--font-mono)] text-sm font-medium">
           {ticker.map((item, i) => (
@@ -42,12 +48,14 @@ export default async function PakistanPage() {
         </div>
       </div>
 
+      {/* Header */}
       <header className="border-b border-[var(--color-border)] sticky top-0 bg-[var(--color-bg)]/95 backdrop-blur z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold">
             Khabar
             <span className="text-[var(--color-accent)]">nama</span>
           </h1>
+
           <nav className="hidden md:flex gap-6">
             <Link href="/">Home</Link>
             <Link href="/pakistan">Pakistan</Link>
@@ -60,11 +68,16 @@ export default async function PakistanPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-10">
-        <h1 className="text-4xl font-bold mb-2">Pakistan</h1>
-        <p className="mb-8 text-gray-400">Latest news from Pakistan</p>
+        <h1 className="text-4xl font-bold mb-8">
+          Khabarnama
+        </h1>
+
+        <p className="mb-8 text-gray-400">
+          Latest News from Pakistan and Around the World
+        </p>
 
         {newsList.length === 0 ? (
-          <p className="text-gray-500">No news published in this category yet.</p>
+          <p className="text-gray-500">No news published yet.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {newsList.map((item) => (
@@ -94,6 +107,7 @@ export default async function PakistanPage() {
       <footer className="border-t border-[var(--color-border)] mt-12">
         <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center">
           <p>© 2026 Khabarnama. All rights reserved.</p>
+
           <div className="flex gap-5 mt-4 md:mt-0">
             <Link href="/">Home</Link>
             <Link href="/pakistan">Pakistan</Link>
