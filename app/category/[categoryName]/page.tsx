@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'; // Har category ka live data lane ke liye
+
 import Link from "next/link";
 import dbConnect from "@/lib/mongodb";
 import News from "@/models/News";
@@ -19,19 +21,29 @@ interface NewsItem {
   createdAt: string;
 }
 
+interface PageProps {
+  params: Promise<{ categoryName: string }>;
+}
+
 async function getNewsByCategory(category: string): Promise<NewsItem[]> {
   await dbConnect();
-  const news = await News.find({ 
-    category: { $regex: new RegExp(`^${category}$`, "i") } 
+  // URL se jo bhi name aayega, yeh query use database se case-insensitive match karegi
+  const news = await News.find({
+    category: { $regex: new RegExp(`^${category}$`, "i") },
   }).sort({ createdAt: -1 }).lean();
   return JSON.parse(JSON.stringify(news));
 }
 
-export default async function WorldPage() {
-  const newsList = await getNewsByCategory("World");
+export default async function DynamicCategoryPage({ params }: PageProps) {
+  const resolvedParams = await params;
+  const currentCategory = resolvedParams.categoryName;
+  
+  // Database se dynamic category ka data fetch ho raha hai
+  const newsList = await getNewsByCategory(currentCategory);
 
   return (
     <div className="min-h-screen">
+      {/* Ticker */}
       <div className="bg-[var(--color-accent)] text-black overflow-hidden whitespace-nowrap py-2">
         <div className="inline-block animate-marquee font-[family-name:var(--font-mono)] text-sm font-medium">
           {ticker.map((item, i) => (
@@ -42,26 +54,28 @@ export default async function WorldPage() {
         </div>
       </div>
 
+      {/* Header */}
       <header className="border-b border-[var(--color-border)] sticky top-0 bg-[var(--color-bg)]/95 backdrop-blur z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold">
             Khabar
             <span className="text-[var(--color-accent)]">nama</span>
           </h1>
-          <nav className="hidden md:flex gap-6">
+          <nav className="hidden md:flex gap-6 capitalize">
             <Link href="/">Home</Link>
-            <Link href="/pakistan">Pakistan</Link>
-            <Link href="/world">World</Link>
-            <Link href="/politics">Politics</Link>
-            <Link href="/sports">Sports</Link>
-            <Link href="/business">Business</Link>
+            <Link href="/category/pakistan">Pakistan</Link>
+            <Link href="/category/world">World</Link>
+            <Link href="/category/politics">Politics</Link>
+            <Link href="/category/sports">Sports</Link>
+            <Link href="/category/business">Business</Link>
           </nav>
         </div>
       </header>
 
+      {/* Main Content */}
       <main className="max-w-6xl mx-auto px-6 py-10">
-        <h1 className="text-4xl font-bold mb-2">World</h1>
-        <p className="mb-8 text-gray-400">Latest news from around the world</p>
+        <h1 className="text-4xl font-bold mb-2 capitalize">{currentCategory}</h1>
+        <p className="mb-8 text-gray-400">Latest news and updates from {currentCategory}</p>
 
         {newsList.length === 0 ? (
           <p className="text-gray-500">No news published in this category yet.</p>
@@ -91,16 +105,17 @@ export default async function WorldPage() {
         )}
       </main>
 
+      {/* Footer */}
       <footer className="border-t border-[var(--color-border)] mt-12">
         <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center">
           <p>© 2026 Khabarnama. All rights reserved.</p>
-          <div className="flex gap-5 mt-4 md:mt-0">
+          <div className="flex gap-5 mt-4 md:mt-0 capitalize">
             <Link href="/">Home</Link>
-            <Link href="/pakistan">Pakistan</Link>
-            <Link href="/world">World</Link>
-            <Link href="/politics">Politics</Link>
-            <Link href="/sports">Sports</Link>
-            <Link href="/business">Business</Link>
+            <Link href="/category/pakistan">Pakistan</Link>
+            <Link href="/category/world">World</Link>
+            <Link href="/category/politics">Politics</Link>
+            <Link href="/category/sports">Sports</Link>
+            <Link href="/category/business">Business</Link>
           </div>
         </div>
       </footer>

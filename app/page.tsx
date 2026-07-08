@@ -21,12 +21,12 @@ interface NewsItem {
   createdAt: string;
 }
 
-// Yeh query bina kisi filter ke saari categories (Pakistan, World, Sports etc.) ka latest data uthayegi
+// Yeh query bina kisi filter ke saari categories ka latest data uthayegi
 async function getLatestNews(): Promise<NewsItem[]> {
   await dbConnect();
-  const news = await News.find({}) // {} Matlab bina kisi filter ke saara data fetch hoga
-    .sort({ createdAt: -1 })       // Naye documents sabse pehle aayenge
-    .limit(20)                     // Taake agar zyada news hon toh top 20 mix show hon
+  const news = await News.find({}) 
+    .sort({ createdAt: -1 })       
+    .limit(20)                     
     .lean();
   return JSON.parse(JSON.stringify(news));
 }
@@ -56,13 +56,14 @@ export default async function Home() {
             <span className="text-[var(--color-accent)]">nama</span>
           </h1>
 
+          {/* Dynamic Category Optimization ke mutabiq Links badal diye hain */}
           <nav className="hidden md:flex gap-6">
             <Link href="/">Home</Link>
-            <Link href="/pakistan">Pakistan</Link>
-            <Link href="/world">World</Link>
-            <Link href="/politics">Politics</Link>
-            <Link href="/sports">Sports</Link>
-            <Link href="/business">Business</Link>
+            <Link href="/category/pakistan">Pakistan</Link>
+            <Link href="/category/world">World</Link>
+            <Link href="/category/politics">Politics</Link>
+            <Link href="/category/sports">Sports</Link>
+            <Link href="/category/business">Business</Link>
           </nav>
         </div>
       </header>
@@ -110,11 +111,11 @@ export default async function Home() {
 
           <div className="flex gap-5 mt-4 md:mt-0">
             <Link href="/">Home</Link>
-            <Link href="/pakistan">Pakistan</Link>
-            <Link href="/world">World</Link>
-            <Link href="/politics">Politics</Link>
-            <Link href="/sports">Sports</Link>
-            <Link href="/business">Business</Link>
+            <Link href="/category/pakistan">Pakistan</Link>
+            <Link href="/category/world">World</Link>
+            <Link href="/category/politics">Politics</Link>
+            <Link href="/category/sports">Sports</Link>
+            <Link href="/category/business">Business</Link>
           </div>
         </div>
       </footer>
