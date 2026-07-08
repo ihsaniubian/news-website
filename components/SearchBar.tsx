@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 interface SearchResult {
@@ -17,7 +16,6 @@ export default function SearchBar() {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   // Bahar click karne par dropdown close karne ke liye
   useEffect(() => {
@@ -30,10 +28,13 @@ export default function SearchBar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Debounce backend API calls
+  // Debounce backend API calls (Fixed strict rule issue)
   useEffect(() => {
     if (query.trim().length < 2) {
-      setResults([]);
+      // Vercel strict error ko avoid karne ke liye state update conditional handle ki
+      if (results.length > 0) {
+        setResults([]);
+      }
       return;
     }
 
@@ -47,14 +48,14 @@ export default function SearchBar() {
           setIsOpen(true);
         }
       } catch (err) {
-        console.error(err);
+        console.error("Search fetch error:", err);
       } finally {
         setLoading(false);
       }
-    }, 300); // 300ms ka wait karega type rukne par
+    }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [query]);
+  }, [query, results.length]); // Added results.length dependency to satisfy linter safely
 
   return (
     <div ref={searchRef} className="relative w-full max-w-xs md:max-w-sm">
