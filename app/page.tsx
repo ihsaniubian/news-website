@@ -1,120 +1,104 @@
-export const dynamic = 'force-dynamic'; 
+import { connectDB } from '@/lib/mongodb';
+import News from '@/models/News';
+import NewsCard from '@/components/NewsCard';
 
-import Link from "next/link";
-import dbConnect from "@/lib/mongodb";
-import News from "@/models/News";
-import SearchBar from "@/components/SearchBar"; // Line 6 fix ke sath
+// Next.js ko batane ke liye ke data dynamic fetch ho (SSR)
+export const revalidate = 0; 
 
-const ticker = [
-  "Markets open higher amid global rally",
-  "Central bank holds interest rates steady",
-  "New tech policy draft released for public feedback",
-  "Regional trade talks resume after brief pause",
-];
-
-interface NewsItem {
-  _id: string;
-  title: string;
-  slug: string;
-  summary: string;
-  category: string;
-  imageUrl?: string;
-  createdAt: string;
+async function getLatestNews() {
+  try {
+    await connectDB();
+    // Database se letest 6 news records fetch karein
+    const newsData = await News.find({ published: true })
+      .sort({ createdAt: -1 })
+      .limit(6)
+      .lean();
+    
+    // Server components ke liye Mongoose IDs ko safe string mein convert karna
+    return JSON.parse(JSON.stringify(newsData));
+  } catch (error) {
+    console.error("Homepage data fetching error:", error);
+    return [];
+  }
 }
 
-async function getLatestNews(): Promise<NewsItem[]> {
-  await dbConnect();
-  const news = await News.find({}) 
-    .sort({ createdAt: -1 })       
-    .limit(20)                     
-    .lean();
-  return JSON.parse(JSON.stringify(news));
-}
+export default async function HomePage() {
+  const allNews = await getLatestNews();
 
-export default async function Home() {
-  const newsList = await getLatestNews();
+  // Breaking News (Sabse latest post)
+  const breakingNews = allNews[0];
+  // Baki bachi hui posts ka grid
+  const regularNews = allNews.slice(1);
 
   return (
-    <div className="min-h-screen">
-
-      {/* Ticker */}
-      <div className="bg-[var(--color-accent)] text-black overflow-hidden whitespace-nowrap py-2">
-        <div className="inline-block animate-marquee font-[family-name:var(--font-mono)] text-sm font-medium">
-          {ticker.map((item, i) => (
-            <span key={i} className="mx-8">
-              ● {item}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Header with SearchBar */}
-      <header className="border-b border-[var(--color-border)] sticky top-0 bg-[var(--color-bg)]/95 backdrop-blur z-50">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
-          <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold shrink-0">
-            Khabar
-            <span className="text-[var(--color-accent)]">nama</span>
+    <main className="min-h-screen bg-[#0f0f12] text-white px-4 py-8 md:px-8">
+      <div className="max-w-7xl mx-auto">
+        
+        {/* Header Branding */}
+        <header className="border-b border-gray-800 pb-6 mb-10 text-center md:text-left">
+          <h1 className="text-4xl font-black tracking-tight text-white md:text-5xl">
+            KHABARNAMA<span className="text-orange-500">.</span>
           </h1>
+          <p className="text-gray-400 text-xs mt-2 font-mono uppercase tracking-widest">
+            Taza Tareen Surkhiyan • Live News Portal
+          </p>
+        </header>
 
-          <nav className="hidden md:flex gap-6 items-center">
-            <Link href="/">Home</Link>
-            <Link href="/category/pakistan">Pakistan</Link>
-            <Link href="/category/world">World</Link>
-            <Link href="/category/politics">Politics</Link>
-            <Link href="/category/sports">Sports</Link>
-            <Link href="/category/business">Business</Link>
-          </nav>
-
-          {/* Search Bar Integration */}
-          <SearchBar />
-        </div>
-      </header>
-
-      <main className="max-w-6xl mx-auto px-6 py-10">
-        <h1 className="text-4xl font-bold mb-8">Khabarnama</h1>
-        <p className="mb-8 text-gray-400">Latest News from Pakistan and Around the World</p>
-
-        {newsList.length === 0 ? (
-          <p className="text-gray-500">No news published yet.</p>
+        {allNews.length === 0 ? (
+          <div className="text-center py-20 border border-dashed border-gray-800 rounded-2xl bg-[#131316]">
+            <p className="text-gray-400 text-lg">Abhi tak koi khabar upload nahi ki gayi.</p>
+            <p className="text-gray-600 text-xs mt-1">Admin panel se pehli news post publish karein!</p>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {newsList.map((item) => (
-              <Link
-                key={item._id}
-                href={`/news/${item.slug}`}
-                className="block border border-[var(--color-border)] rounded-lg p-4 hover:border-[var(--color-accent)] transition"
-              >
-                {item.imageUrl && (
-                  <img
-                    src={item.imageUrl}
-                    alt={item.title}
-                    className="w-full h-40 object-cover rounded mb-3"
-                  />
-                )}
-                <span className="text-xs uppercase text-[var(--color-accent)]">
-                  {item.category}
-                </span>
-                <h2 className="font-bold text-lg mt-1">{item.title}</h2>
-                <p className="text-sm text-gray-400 mt-2">{item.summary}</p>
-              </Link>
-            ))}
-          </div>
-        )}
-      </main>
+          <>
+            {/* 🔥 Hero Breaking News Banner */}
+            {breakingNews && (
+              <section className="mb-12">
+                <h2 className="text-orange-500 text-xs uppercase font-bold tracking-widest mb-4 flex items-center gap-2">
+                  <span className="h-2 w-2 bg-red-600 rounded-full animate-ping"></span> Breaking News
+                </h2>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-[#16161a] border border-gray-800 rounded-2xl overflow-hidden p-4 md:p-6 hover:border-gray-700 transition-all">
+                  <div className="lg:col-span-7 h-64 md:h-96 relative rounded-xl overflow-hidden bg-gray-900">
+                    <img 
+                      src={breakingNews.imageUrl} 
+                      alt={breakingNews.title}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                  <div className="lg:col-span-5 flex flex-col justify-center py-2">
+                    <span className="text-xs text-orange-500 font-semibold uppercase tracking-wider mb-2">{breakingNews.category}</span>
+                    <h2 className="text-2xl md:text-3xl font-black text-white leading-tight mb-4">
+                      <a href={`/news/${breakingNews.slug}`} className="hover:text-orange-400 transition-colors">
+                        {breakingNews.title}
+                      </a>
+                    </h2>
+                    <p className="text-gray-400 text-sm md:text-base leading-relaxed mb-6 line-clamp-4">
+                      {breakingNews.summary}
+                    </p>
+                    <div className="mt-auto pt-4 border-t border-gray-800 flex justify-between items-center text-xs text-gray-500">
+                      <span>By Admin</span>
+                      <span>{new Date(breakingNews.createdAt).toLocaleDateString('en-PK')}</span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
 
-      <footer className="border-t border-[var(--color-border)] mt-12">
-        <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center">
-          <p>© 2026 Khabarnama. All rights reserved.</p>
-          <div className="flex gap-5 mt-4 md:mt-0">
-            <Link href="/">Home</Link>
-            <Link href="/category/pakistan">Pakistan</Link>
-            <Link href="/category/world">World</Link>
-            <Link href="/category/politics">Politics</Link>
-            <Link href="/category/sports">Sports</Link>
-            <Link href="/category/business">Business</Link>
-          </div>
-        </div>
-      </footer>
-    </div>
+            {/* 📰 News Feed Grid Section */}
+            <section>
+              <h2 className="text-xl font-extrabold text-white mb-6 tracking-tight border-l-4 border-orange-500 pl-3">
+                Latest Updates
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {regularNews.map((post: any) => (
+                  <NewsCard key={post._id} post={post} />
+                ))}
+              </div>
+            </section>
+          </>
+        )}
+
+      </div>
+    </main>
   );
 }

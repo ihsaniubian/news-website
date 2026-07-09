@@ -1,71 +1,62 @@
-'use client';
-
-import { useState } from 'react';
+"use client";
+import { useState } from "react";
+import { CldUploadWidget } from "next-cloudinary";
 
 interface ImageUploaderProps {
   onUploadSuccess: (url: string) => void;
 }
 
 export default function ImageUploader({ onUploadSuccess }: ImageUploaderProps) {
-  const [uploading, setUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState('');
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Image preview dikhane ke liye
-    setPreviewUrl(URL.createObjectURL(file));
-    setUploading(true);
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      // Hamara backend upload route
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.url) {
-        onUploadSuccess(data.url);
-      } else {
-        alert('❌ Upload failed: ' + (data.error || 'Unknown error'));
-      }
-    } catch (error) {
-      console.error('Upload error:', error);
-      alert('❌ Error uploading image');
-    } finally {
-      setUploading(false);
-    }
-  };
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "ymkpkkoc";
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-center w-full">
-        <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-700 border-dashed rounded-lg cursor-pointer bg-slate-800 hover:bg-slate-700/50 transition">
-          <div className="flex flex-col items-center justify-center pt-5 pb-6">
-            <svg className="w-8 h-8 mb-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-            <p className="mb-2 text-sm text-slate-400">
-              <span className="font-semibold">Click to upload</span> or drag and drop
-            </p>
-            <p className="text-xs text-slate-500">PNG, JPG or JPEG</p>
+    <div className="space-y-4 w-full">
+      <label className="block text-xs uppercase font-bold tracking-wider text-gray-400">
+        Feature Image <span className="text-red-500">*</span>
+      </label>
+
+      <CldUploadWidget
+        // 🎯 EXACT MATCH: Aapke dashboard ke mutabik 'khabarnama' hona chahiye
+        uploadPreset="khabarnama" 
+        options={{
+          cloudName: "ymkpkkoc",
+          sources: ["local", "url", "camera"],
+          multiple: false,
+          maxFiles: 1,
+        }}
+        onSuccess={(result: any) => {
+          if (result?.info?.secure_url) {
+            const uploadedUrl = result.info.secure_url;
+            setImageUrl(uploadedUrl);
+            onUploadSuccess(uploadedUrl);
+          }
+        }}
+      >
+        {({ open }) => {
+          return (
+            <button
+              type="button"
+              onClick={() => open()}
+              className="w-full py-3 px-4 bg-[#16161a] hover:bg-gray-800 text-white font-medium rounded-xl border border-gray-800 hover:border-orange-500 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              📸 {imageUrl ? "Change Selected Image" : "Upload Image via Cloudinary"}
+            </button>
+          );
+        }}
+      </CldUploadWidget>
+
+      {/* Preview Box */}
+      {imageUrl && (
+        <div className="relative mt-2 rounded-xl overflow-hidden border border-gray-800 h-48 w-full bg-black">
+          <img
+            src={imageUrl}
+            alt="Uploaded preview"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute bottom-2 right-2 bg-green-600 text-white text-[10px] uppercase font-bold px-2 py-1 rounded shadow">
+            ✓ Uploaded Successfully
           </div>
-          <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} disabled={uploading} />
-        </label>
-      </div>
-
-      {uploading && <p className="text-sm text-blue-400 animate-pulse">Uploading image to Cloudinary...</p>}
-
-      {previewUrl && !uploading && (
-        <div className="mt-2">
-          <p className="text-xs text-slate-400 mb-1">Image Preview:</p>
-          <img src={previewUrl} alt="Preview" className="h-32 w-auto object-cover rounded border border-slate-700" />
         </div>
       )}
     </div>

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongodb";
+import {connectDB} from "@/lib/mongodb";
 import News from "@/models/News";
 
 export async function GET() {
   try {
-    await dbConnect();
+    await connectDB();
     const news = await News.find({}).sort({ createdAt: -1 });
 
     return NextResponse.json(news);
@@ -18,7 +18,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    await dbConnect();
+    await connectDB();
 
     const body = await req.json();
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongodb";
+import { connectDB } from "@/lib/mongodb";
 import News from "@/models/News";
 
 export async function GET(request: Request) {
@@ -11,7 +11,7 @@ export async function GET(request: Request) {
       return NextResponse.json([]);
     }
 
-    await dbConnect();
+    await connectDB();
 
     // Title aur summary mein keyword search karne ke liye regex query
     const results = await News.find({

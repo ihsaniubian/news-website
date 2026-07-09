@@ -1,28 +1,38 @@
 {
-  "name": "news-website",
+  "name": "khabarnama",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint"
   },
   "dependencies": {
-    "mongodb": "^7.3.0",
+    "@next/third-parties": "^16.2.10",
+    "@tailwindcss/postcss": "^4.3.2",
+    "bcryptjs": "^2.4.3",
+    "isomorphic-dompurify": "^3.18.0",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.24.1",
-    "next": "^15.5.6",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "next": "15.0.3",
+    "next-cloudinary": "^6.17.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "slugify": "^1.6.9"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.9",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "@types/bcryptjs": "^2.4.6",
+    "@types/dompurify": "^3.2.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^22.7.4",
+    "@types/react": "^18.3.10",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "15.0.3",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13",
+    "typescript": "^5.6.3"
   }
 }

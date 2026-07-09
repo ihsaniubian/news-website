@@ -1,54 +1,23 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
-import Script from "next/script";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-display",
-  weight: ["500", "600", "700"],
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-body",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-  weight: ["500"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Khabarnama — Pakistan & World News",
-  description: "Latest news from Pakistan and around the world.",
+  title: "Khabarnama Admin Panel",
+  description: "Manage news articles dynamically",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <head>
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-MMH2HYH9LW"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-MMH2HYH9LW');
-          `}
-        </Script>
-      </head>
-      <body
-        className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased`}
-      >
+    // suppressHydrationWarning browser extensions (Grammarly/LanguageTool) ke clash ko khatam karta hai
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.className} bg-[#0f0f12] text-white antialiased min-h-screen`} suppressHydrationWarning>
         {children}
       </body>
     </html>

@@ -1,13 +1,10 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  serverExternalPackages: ['isomorphic-dompurify', 'jsdom'],
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'res.cloudinary.com', // Ab yahan cloudinary ka domain aayega
-      },
-    ],
+    domains: ['res.cloudinary.com', 'images.unsplash.com'],
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;

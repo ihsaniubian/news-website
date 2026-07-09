@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'; 
 
 import Link from "next/link";
-import dbConnect from "@/lib/mongodb";
+import { connectDB } from "@/lib/mongodb";
 import News from "@/models/News";
 import SearchBar from "@/components/SearchBar"; // Line 6 fix ke sath
 
@@ -27,7 +27,7 @@ interface PageProps {
 }
 
 async function getNewsByCategory(category: string): Promise<NewsItem[]> {
-  await dbConnect();
+  await connectDB();
   const news = await News.find({
     category: { $regex: new RegExp(`^${category}$`, "i") },
   }).sort({ createdAt: -1 }).lean();

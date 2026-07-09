@@ -1,73 +1,63 @@
-import { NextRequest, NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
-import News from "@/models/News";
+import { NextResponse } from 'next/server';
+import DOMPurify from 'isomorphic-dompurify';
+// 🔌 Aapki naye naam wali file ka import yahan add kar diya hai
+import { connectDB } from '@/lib/mongodb'; 
+import News from '@/models/News';
 
-function generateSlug(title: string) {
-  return (
-    title
+export async function POST(request: Request) {
+  try {
+    // 1. Database Connect karein
+    await connectDB();
+
+    const body = await request.json();
+    const { title, summary, content, category, imageUrl, source, author } = body;
+
+    // 2. Validation Check
+    if (!title || !content || !imageUrl) {
+      return NextResponse.json(
+        { error: "Title, Content, aur Image lazmi hain!" },
+        { status: 400 }
+      );
+    }
+
+    // 3. Security Sanitize (XSS Protection for Rich Text)
+    const sanitizedContent = DOMPurify.sanitize(content);
+
+    // 4. Dynamic Unique Slug Generation
+    let slug = title
       .toLowerCase()
       .trim()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-") +
-    "-" +
-    Date.now().toString().slice(-5)
-  );
-}
+      .replace(/[^a-z0-9\s-]/g, '') // Special characters remove karne ke liye
+      .replace(/\s+/g, '-');        // Spaces ko hyphens se replace karne ke liye
 
-export async function GET() {
-  try {
-    await connectDB();
+    // Agar same slug pehle se database mein ho to unique ID attach karein
+    const existingNews = await News.findOne({ slug });
+    if (existingNews) {
+      slug = `${slug}-${Date.now().toString().slice(-4)}`;
+    }
 
-    const news = await News.find().sort({ createdAt: -1 });
-
-    return NextResponse.json(news, { status: 200 });
-  } catch (error: unknown) {
-    console.error("GET ERROR:", error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(req: NextRequest) {
-  try {
-    await connectDB();
-
-    const body = await req.json();
-
-    const news = await News.create({
-      title: body.title,
-      slug: body.slug || generateSlug(body.title),
-      summary: body.summary || "",
-      content: body.content,
-      category: body.category,
-      imageUrl: body.imageUrl || "",
-      source: body.source || "",
-      author: "Admin",
-      published: true,
+    // 5. Save to MongoDB Atlas
+    const newPost = await News.create({
+      title,
+      slug,
+      summary,
+      content: sanitizedContent,
+      category,
+      imageUrl,
+      source: source || 'Khabarnama Report',
+      author: author || 'Admin',
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        news,
-      },
-      { status: 201 }
-    );
-  } catch (error: unknown) {
-    console.error("POST ERROR:", error);
+    return NextResponse.json({ 
+      success: true, 
+      message: "News post completely saved to DB! 🎉",
+      data: newPost 
+    }, { status: 201 });
 
+  } catch (error) {
+    console.error("API Error:", error);
     return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
+      { error: "Internal Server Error! Data save nahi ho saka." },
       { status: 500 }
     );
   }

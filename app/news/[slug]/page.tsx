@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'; // <--- Live data ke liye zaroori hai
 
 import Link from "next/link";
-import dbConnect from "@/lib/mongodb";
+import {connectDB} from "@/lib/mongodb";
 import News from "@/models/News";
 import { notFound } from "next/navigation";
 
@@ -23,7 +23,7 @@ interface PageProps {
 }
 
 async function getSingleNews(slug: string): Promise<NewsItem | null> {
-  await dbConnect();
+  await connectDB();
   // Database se slug match kar rahe hain
   const singleNews = await News.findOne({ slug: slug }).lean();
   if (!singleNews) return null;
