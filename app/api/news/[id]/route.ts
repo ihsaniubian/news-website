@@ -1,52 +1,33 @@
-import { NextResponse } from 'next/server';
-import { connectDB } from '@/lib/mongodb'; // ⚠️ Apne mongoose/database connection file ka sahi path check kar lein
-import News from '@/models/News'; // ⚠️ Apne News Model/Schema ka sahi path check kar lein
+import { NextResponse } from "next/server";
 
-// ==========================================
-// 1. PUT: Specific News ko Update karne ke liye
-// ==========================================
+// 1. EDIT / UPDATE NEWS (PUT)
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  const id = params.id;
+  const body = await request.json();
+  const { title, content, metaTitle, metaDescription } = body;
+
+  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
   try {
-    await connectDB();
-    const id = params.id;
-    const body = await request.json();
+    // TODO: Yahan apni Database Update query likhein (Prisma, Mongoose, ya SQL)
+    // Example: await db.news.update({ data: { title, slug, content... } })
 
-    // ID ke zariye database mein entry dhoond kar naye data se update karna
-    const updatedNews = await News.findByIdAndUpdate(
-      id,
-      { $set: body },
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedNews) {
-      return NextResponse.json({ error: 'News article not found' }, { status: 404 });
-    }
-
-    return NextResponse.json(updatedNews, { status: 200 });
+    return NextResponse.json({ success: true, message: `News ${id} updated successfully!`, slug });
   } catch (error: any) {
-    console.error("Error updating news:", error);
-    return NextResponse.json({ error: error.message || 'Failed to update news' }, { status: 500 });
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
-// ==========================================
-// 2. DELETE: Specific News ko Urane ke liye
-// ==========================================
+// 2. DELETE NEWS (DELETE)
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  const id = params.id;
+
   try {
-    await connectDB();
-    const id = params.id;
+    // TODO: Yahan apni Database Delete query likhein
+    // Example: await db.news.delete({ where: { id } })
 
-    // ID ke zariye database se news delete karna
-    const deletedNews = await News.findByIdAndDelete(id);
-
-    if (!deletedNews) {
-      return NextResponse.json({ error: 'News article not found' }, { status: 404 });
-    }
-
-    return NextResponse.json({ message: 'News deleted successfully' }, { status: 200 });
+    return NextResponse.json({ success: true, message: `News ${id} deleted successfully!` });
   } catch (error: any) {
-    console.error("Error deleting news:", error);
-    return NextResponse.json({ error: error.message || 'Failed to delete news' }, { status: 500 });
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

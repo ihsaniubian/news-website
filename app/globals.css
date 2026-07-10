@@ -1,6 +1,9 @@
 
 @import "tailwindcss";
 
+/* Iske neeche agar aapne Quill ki css add ki thi toh wo rehne dein: */
+@import "quill/dist/quill.snow.css";
+
 :root {
   --color-bg: #0B0E14;
   --color-bg-card: #12151D;

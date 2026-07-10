@@ -1,26 +1,26 @@
-import { MetadataRoute } from 'next';
-// 💡 Note: Agar Prisma hai, to upar database import kar sakte hain:
-// import { prisma } from '@/lib/prisma'; 
+import { MetadataRoute } from "next";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://khabarnama.com'; // Deploy karte waqt apna actual URL laga lena
+  const baseUrl = "https://yourwebsite.com";
 
-  // 1. Static Pages
-  const staticPages = [
-    { url: baseUrl, lastModified: new Date() },
-  ];
+  // TODO: Apne database se saari news ka slug aur updated_at fetch karein
+  // const newsList = await db.news.findMany({ select: { slug: true, updated_at: true } });
+  const mockNewsList = [{ slug: "example-news", updated_at: new Date() }]; // Temporary dummy data
 
-  // 2. Dynamic News Pages (Database Mock Example)
-  // Real database call aisi hogi: const posts = await prisma.news.findMany({ select: { slug: true, updatedAt: true } });
-  const mockDbPosts = [
-    { slug: 'pakistan-ke-chote-karobar-ke-liye-naye-scheme', updatedAt: new Date() },
-    { slug: 'karachi-metro-bus-project-nears-completion', updatedAt: new Date() }
-  ];
-
-  const newsPages = mockDbPosts.map((post) => ({
-    url: `${baseUrl}/news/${post.slug}`,
-    lastModified: post.updatedAt,
+  const newsUrls = mockNewsList.map((news) => ({
+    url: `${baseUrl}/news/${news.slug}`,
+    lastModified: new Date(news.updated_at),
+    changeFrequency: "daily" as const,
+    priority: 0.7,
   }));
 
-  return [...staticPages, ...newsPages];
+  return [
+    {
+      url: baseUrl,
+      lastModified: new Date(),
+      changeFrequency: "always",
+      priority: 1.0,
+    },
+    ...newsUrls,
+  ];
 }

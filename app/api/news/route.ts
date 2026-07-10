@@ -1,18 +1,43 @@
 import { NextResponse } from 'next/server';
 import DOMPurify from 'isomorphic-dompurify';
-// 🔌 Aapki naye naam wali file ka import yahan add kar diya hai
+// 🔌 Database connection aur Model imports
 import { connectDB } from '@/lib/mongodb'; 
 import News from '@/models/News';
 
+// ==========================================
+// 1. GET METHOD - Saari News Fetch Karne Ke Liye
+// ==========================================
+export async function GET() {
+  try {
+    // Database Connect karein
+    await connectDB();
+
+    // Saari news fetch karein (Newest first - jo nayi post ho wo upar aaye)
+    const allNews = await News.find().sort({ createdAt: -1 });
+
+    // Data return karein frontend ko
+    return NextResponse.json(allNews, { status: 200 });
+  } catch (error) {
+    console.error("GET API Error:", error);
+    return NextResponse.json(
+      { error: "Data fetch nahi ho saka!" },
+      { status: 500 }
+    );
+  }
+}
+
+// ==========================================
+// 2. POST METHOD - Nayi News Save Karne Ke Liye
+// ==========================================
 export async function POST(request: Request) {
   try {
-    // 1. Database Connect karein
+    // Database Connect karein
     await connectDB();
 
     const body = await request.json();
     const { title, summary, content, category, imageUrl, source, author } = body;
 
-    // 2. Validation Check
+    // Validation Check
     if (!title || !content || !imageUrl) {
       return NextResponse.json(
         { error: "Title, Content, aur Image lazmi hain!" },
@@ -20,10 +45,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3. Security Sanitize (XSS Protection for Rich Text)
+    // Security Sanitize (XSS Protection for Rich Text)
     const sanitizedContent = DOMPurify.sanitize(content);
 
-    // 4. Dynamic Unique Slug Generation
+    // Dynamic Unique Slug Generation
     let slug = title
       .toLowerCase()
       .trim()
@@ -36,7 +61,7 @@ export async function POST(request: Request) {
       slug = `${slug}-${Date.now().toString().slice(-4)}`;
     }
 
-    // 5. Save to MongoDB Atlas
+    // Save to MongoDB Atlas
     const newPost = await News.create({
       title,
       slug,

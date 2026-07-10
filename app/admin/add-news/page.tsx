@@ -1,155 +1,212 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import ImageUploader from "@/components/ImageUploader";
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function AddNewsPage() {
-  const [title, setTitle] = useState("");
-  const [summary, setSummary] = useState("");
-  const [content, setContent] = useState("");
-  const [category, setCategory] = useState("Pakistan");
-  const [imageUrl, setImageUrl] = useState(""); // 🔗 Isme image uploader ka secure link save hoga
+export default function AddNews() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ type: '', text: '' });
+
+  // Form states matching your API body parameters
+  const [formData, setFormData] = useState({
+    title: '',
+    summary: '',
+    content: '',
+    category: 'General',
+    imageUrl: '',
+    source: '',
+    author: ''
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Validations check
-    if (!title || !content || !imageUrl) {
-      alert("Title, Full Content aur Feature Image upload karna lazmi hai!");
-      return;
-    }
-
     setLoading(true);
+    setMessage({ type: '', text: '' });
 
     try {
-      const response = await fetch("/api/news", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          title, 
-          summary, 
-          content, 
-          category, 
-          imageUrl,
-          published: true 
-        }),
+      const response = await fetch('/api/news', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
       });
 
       const result = await response.json();
 
-      if (response.ok) {
-        alert("News Article Published Successfully! 🎉");
-        // Form states reset karein
-        setTitle("");
-        setSummary("");
-        setContent("");
-        setImageUrl("");
-        setCategory("Pakistan");
-      } else {
-        alert(`Error: ${result.error || "Failed to publish news"}`);
+      if (!response.ok) {
+        throw new Error(result.error || 'Kuch galti hui hai!');
       }
-    } catch (error) {
-      console.error("Submission failed:", error);
-      alert("Backend connection failed. Something went wrong while saving news!");
+
+      setMessage({ type: 'success', text: 'News successfully published! 🎉' });
+      
+      // Post hone ke baad wapas admin dashboard par le jayega 2 seconds baad
+      setTimeout(() => {
+        router.push('/admin');
+      }, 2000);
+
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.message });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="min-h-screen bg-[#0f0f12] text-white p-4 md:p-8 flex items-center justify-center">
-      <div className="w-full max-w-2xl bg-[#131316] p-6 rounded-2xl border border-gray-800 shadow-xl">
+    <div className="min-h-screen bg-[#f8fafc] p-8 flex justify-center items-center">
+      <div className="w-full max-w-3xl bg-white border border-slate-200 rounded-2xl shadow-sm p-8 space-y-6">
         
-        {/* Header Title */}
-        <div className="border-b border-gray-800 pb-4 mb-6">
-          <h2 className="text-xl font-black tracking-tight text-white uppercase">
-            Khabarnama <span className="text-orange-500">Publisher Desk</span>
-          </h2>
-          <p className="text-xs text-gray-400 mt-1">
-            Database mein naye dynamic news post publish karein
-          </p>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="space-y-5">
-          
-          {/* Headline Title */}
+        {/* Header */}
+        <div className="flex items-center justify-between border-b pb-4 border-slate-100">
           <div>
-            <label className="block text-xs uppercase font-bold tracking-wider text-gray-400 mb-1.5">
-              News Title / Headline <span className="text-red-500">*</span>
-            </label>
-            <input 
-              type="text" 
-              value={title} 
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full p-3.5 bg-[#16161a] border border-gray-800 rounded-xl focus:border-orange-500 outline-none text-white text-sm transition-all placeholder:text-gray-600" 
-              placeholder="Enter eye-catching headline..." 
-              required
-            />
+            <h2 className="text-2xl font-bold text-slate-800">Create New Article</h2>
+            <p className="text-sm text-slate-500 mt-1">Fill out the details below to publish news to Khabarnama.</p>
           </div>
-
-          {/* Category Dropdown */}
-          <div>
-            <label className="block text-xs uppercase font-bold tracking-wider text-gray-400 mb-1.5">
-              Select Category <span className="text-red-500">*</span>
-            </label>
-            <select 
-              value={category} 
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full p-3.5 bg-[#16161a] border border-gray-800 rounded-xl focus:border-orange-500 outline-none text-white text-sm transition-all cursor-pointer"
-            >
-              <option value="Pakistan">Pakistan</option>
-              <option value="Politics">Politics</option>
-              <option value="Business">Business</option>
-              <option value="Sports">Sports</option>
-              <option value="World">World</option>
-              <option value="Tech">Tech</option>
-            </select>
-          </div>
-
-          {/* 📸 Cloudinary Integrated Image Uploader */}
-          <div className="border border-gray-800 bg-[#16161a]/30 p-4 rounded-xl">
-            <ImageUploader onUploadSuccess={(url) => setImageUrl(url)} />
-          </div>
-
-          {/* Summary textarea */}
-          <div>
-            <label className="block text-xs uppercase font-bold tracking-wider text-gray-400 mb-1.5">
-              Short Summary / Excerpt
-            </label>
-            <textarea 
-              value={summary} 
-              onChange={(e) => setSummary(e.target.value)}
-              className="w-full p-3.5 bg-[#16161a] border border-gray-800 rounded-xl focus:border-orange-500 outline-none text-white text-sm h-20 resize-none transition-all placeholder:text-gray-600" 
-              placeholder="Short 2-line intro description for home cards..."
-            />
-          </div>
-
-          {/* Content textarea */}
-          <div>
-            <label className="block text-xs uppercase font-bold tracking-wider text-gray-400 mb-1.5">
-              Full News Body Content <span className="text-red-500">*</span>
-            </label>
-            <textarea 
-              value={content} 
-              onChange={(e) => setContent(e.target.value)}
-              className="w-full p-3.5 bg-[#16161a] border border-gray-800 rounded-xl focus:border-orange-500 outline-none text-white text-sm h-44 transition-all placeholder:text-gray-600" 
-              placeholder="Write full news article details here..." 
-              required
-            />
-          </div>
-
-          {/* Submit/Publish Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-4 mt-2 bg-orange-600 hover:bg-orange-500 disabled:bg-gray-800 disabled:text-gray-500 text-white font-bold text-sm rounded-xl transition-all duration-300 uppercase tracking-widest cursor-pointer shadow-lg shadow-orange-600/10"
+          <button 
+            onClick={() => router.push('/admin')} 
+            className="text-sm font-medium text-slate-500 hover:text-slate-800 transition"
           >
-            {loading ? "Publishing Post..." : "Publish News Article 🚀"}
+            ← Back
           </button>
+        </div>
 
+        {/* Status Messages */}
+        {message.text && (
+          <div className={`p-4 rounded-xl font-medium text-sm text-center ${
+            message.type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
+          }`}>
+            {message.text}
+          </div>
+        )}
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Title */}
+          <div className="flex flex-col space-y-1.5">
+            <label className="text-sm font-semibold text-slate-700">Article Title *</label>
+            <input
+              type="text"
+              name="title"
+              required
+              value={formData.title}
+              onChange={handleChange}
+              placeholder="e.g., Pakistan Cricket Team Won the Series"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-500 transition text-slate-800"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Category */}
+            <div className="flex flex-col space-y-1.5">
+              <label className="text-sm font-semibold text-slate-700">Category</label>
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-500 transition text-slate-800 bg-white"
+              >
+                <option value="General">General</option>
+                <option value="Pakistan">Pakistan</option>
+                <option value="Politics">Politics</option>
+                <option value="Sports">Sports</option>
+                <option value="Business">Business</option>
+                <option value="World">World</option>
+              </select>
+            </div>
+
+            {/* Image URL */}
+            <div className="flex flex-col space-y-1.5">
+              <label className="text-sm font-semibold text-slate-700">Image URL *</label>
+              <input
+                type="text"
+                name="imageUrl"
+                required
+                value={formData.imageUrl}
+                onChange={handleChange}
+                placeholder="https://example.com/image.jpg"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-500 transition text-slate-800"
+              />
+            </div>
+          </div>
+
+          {/* Summary */}
+          <div className="flex flex-col space-y-1.5">
+            <label className="text-sm font-semibold text-slate-700">Short Summary</label>
+            <textarea
+              name="summary"
+              rows={2}
+              value={formData.summary}
+              onChange={handleChange}
+              placeholder="Brief summary of the article..."
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-500 transition text-slate-800 resize-none"
+            />
+          </div>
+
+          {/* Main Content Body */}
+          <div className="flex flex-col space-y-1.5">
+            <label className="text-sm font-semibold text-slate-700">Full Content *</label>
+            <textarea
+              name="content"
+              required
+              rows={6}
+              value={formData.content}
+              onChange={handleChange}
+              placeholder="Write or paste your main article content body here..."
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-500 transition text-slate-800"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Author */}
+            <div className="flex flex-col space-y-1.5">
+              <label className="text-sm font-semibold text-slate-700">Author Name</label>
+              <input
+                type="text"
+                name="author"
+                value={formData.author}
+                onChange={handleChange}
+                placeholder="Admin"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-500 transition text-slate-800"
+              />
+            </div>
+
+            {/* Source */}
+            <div className="flex flex-col space-y-1.5">
+              <label className="text-sm font-semibold text-slate-700">News Source</label>
+              <input
+                type="text"
+                name="source"
+                value={formData.source}
+                onChange={handleChange}
+                placeholder="Khabarnama Report"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-500 transition text-slate-800"
+              />
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="pt-4 border-t border-slate-100 flex justify-end space-x-3">
+            <button
+              type="button"
+              onClick={() => router.push('/admin')}
+              className="px-5 py-2.5 rounded-xl border text-sm font-medium text-slate-600 hover:bg-slate-50 transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium shadow-sm transition disabled:opacity-50"
+            >
+              {loading ? 'Publishing...' : 'Publish Article'}
+            </button>
+          </div>
         </form>
+
       </div>
-    </main>
+    </div>
   );
 }

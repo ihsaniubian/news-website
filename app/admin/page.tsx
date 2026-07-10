@@ -1,86 +1,220 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect } from 'react';
+
+// TypeScript Interface matching your MongoDB News Schema precisely
+interface Article {
+  _id: string;
+  title: string;
+  category: string;
+  imageUrl?: string;
+  status?: string; 
+  views?: number;
+  createdAt?: string;
+}
 
 export default function AdminDashboard() {
-  const [newsList, setNewsList] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // Fetch data from your freshly completed API
   useEffect(() => {
     async function fetchNews() {
       try {
-        const res = await fetch('/api/news');
-        const data = await res.json();
-        if (res.ok) setNewsList(data);
-      } catch (err) {
-        console.error("Dashboard data fetch error:", err);
+        const response = await fetch('/api/news');
+        if (!response.ok) {
+          throw new Error('Failed to fetch data from live API');
+        }
+        const data = await response.json();
+        setArticles(data);
+      } catch (err: any) {
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     }
+
     fetchNews();
   }, []);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Kya aap waqai is khabar ko delete karna chahte hain?")) return;
-    try {
-      const res = await fetch(`/api/news/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        alert('Khabar kamyabi se uradi gayi!');
-        setNewsList(newsList.filter(item => item._id !== id));
-      }
-    } catch (err) {
-      alert('Delete karne mein error aaya.');
-    }
-  };
-
-  if (loading) {
-    return <div className="min-h-screen bg-[#121212] text-white p-6 flex items-center justify-center">Loading Dashboard...</div>;
-  }
-
   return (
-    <div className="min-h-screen bg-[#121212] text-white p-6 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center border-b border-gray-800 pb-4 mb-8">
-        <h1 className="text-2xl font-black text-orange-500">⚙️ Khabarnama Admin Control</h1>
-        <div className="flex gap-3">
-          <Link href="/" className="text-xs bg-gray-800 text-gray-300 px-4 py-2 rounded font-bold">🏠 Home Page</Link>
-          <Link href="/admin/add-news" className="text-xs bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded font-bold">➕ Add New Post</Link>
+    <div className="flex min-h-screen bg-[#f8fafc]">
+      
+      {/* ================= SIDEBAR ================= */}
+      <aside className="w-64 bg-[#1e293b] text-slate-300 flex flex-col hidden md:flex">
+        <div className="p-6 border-b border-slate-700">
+          <h1 className="text-xl font-bold text-white tracking-wide">Khabarnama</h1>
+          <p className="text-xs text-slate-400 mt-1">Pakistan & World News</p>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div className="bg-[#1e1e1e] p-4 rounded border border-gray-800">
-          <p className="text-xs text-gray-400 font-bold uppercase">Total Published Articles</p>
-          <h2 className="text-3xl font-black text-orange-400 mt-1">{newsList.length}</h2>
+        <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+          <a href="#" className="flex items-center space-x-3 bg-blue-600 text-white px-4 py-3 rounded-lg font-medium">
+            <span className="w-5 text-center">📊</span>
+            <span>Dashboard</span>
+          </a>
+          <a href="#" className="flex items-center space-x-3 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-lg transition">
+            <span className="w-5 text-center">📄</span>
+            <span>All Articles</span>
+          </a>
+          <a href="#" className="flex items-center space-x-3 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-lg transition">
+            <span className="w-5 text-center">➕</span>
+            <span>Add New Article</span>
+          </a>
+          <a href="#" className="flex items-center space-x-3 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-lg transition">
+            <span className="w-5 text-center">📁</span>
+            <span>Categories</span>
+          </a>
+        </nav>
+
+        <div className="p-4 border-t border-slate-700">
+          <a href="#" className="flex items-center space-x-3 text-red-400 hover:bg-slate-800 px-4 py-3 rounded-lg transition">
+            <span className="w-5 text-center">🚪</span>
+            <span>Logout</span>
+          </a>
         </div>
-      </div>
+      </aside>
 
-      <div className="bg-[#1e1e1e] p-6 rounded border border-gray-800">
-        <h3 className="text-sm font-bold text-gray-300 mb-4">Manage Existing News</h3>
-        {newsList.length === 0 ? (
-          <p className="text-xs text-gray-500">Abhi tak koi khabar database mein upload nahi hui.</p>
-        ) : (
-          <div className="divide-y divide-gray-800">
-            {newsList.map((news) => (
-              <div key={news._id} className="py-3 flex justify-between items-center gap-4">
-                <div className="flex items-center gap-3 min-w-0">
-                  {news.imageUrl && <img src={news.imageUrl} className="w-10 h-10 object-cover rounded bg-black flex-shrink-0" alt="" />}
-                  <div className="min-w-0">
-                    <h4 className="text-xs font-bold text-gray-200 truncate max-w-md">{news.title}</h4>
-                    <span className="text-[10px] text-orange-400 font-semibold uppercase">{news.category}</span>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => handleDelete(news._id)} className="text-[11px] bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white px-3 py-1 rounded transition-colors font-bold">
-                    Delete
-                  </button>
+      {/* ================= MAIN CONTENT AREA ================= */}
+      <main className="flex-1 flex flex-col min-w-0">
+        
+        {/* Top Navbar */}
+        <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-8">
+          <button className="text-slate-600 md:hidden">☰</button>
+          <div className="flex items-center space-x-6 ml-auto">
+            <div className="relative cursor-pointer">
+              <span className="text-xl text-slate-600">🔔</span>
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">5</span>
+            </div>
+            <div className="flex items-center space-x-3 border-l pl-6 border-slate-200">
+              <div className="w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm">A</div>
+              <div>
+                <p className="text-sm font-semibold text-slate-800 leading-none">Admin</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Super Admin</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Dashboard Inner Body */}
+        <div className="p-8 space-y-8 flex-1 overflow-y-auto">
+          
+          {/* Header Section */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-800">Dashboard</h2>
+              <p className="text-sm text-slate-500 mt-1">Welcome back, Admin! Here's what's happening with your news website.</p>
+            </div>
+            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center space-x-2 shadow-sm transition">
+              <span>+ Add New Article</span>
+            </button>
+          </div>
+
+          {/* Dynamic Stats Card */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-white p-6 rounded-xl border border-slate-200 flex items-start justify-between shadow-sm">
+              <div className="space-y-2">
+                <p className="text-sm text-slate-500 font-medium">Total Articles</p>
+                <h3 className="text-3xl font-bold text-slate-800">{loading ? '...' : articles.length}</h3>
+                <span className="inline-block text-xs text-green-600 font-medium bg-green-50 px-2 py-0.5 rounded">Live count</span>
+              </div>
+              <div className="p-3 bg-blue-50 text-blue-600 rounded-lg text-xl">📄</div>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl border border-slate-200 flex items-start justify-between shadow-sm">
+              <div className="space-y-2">
+                <p className="text-sm text-slate-500 font-medium">Total Views</p>
+                <h3 className="text-3xl font-bold text-slate-800">0</h3>
+                <span className="inline-block text-xs text-slate-400 bg-slate-50 px-2 py-0.5 rounded">Analytics</span>
+              </div>
+              <div className="p-3 bg-green-50 text-green-600 rounded-lg text-xl">👁️</div>
+            </div>
+          </div>
+
+          {/* Table & Quick Actions Block */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            {/* Live Table */}
+            <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+              <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                <h4 className="font-bold text-slate-800">Recent Articles</h4>
+                <a href="#" className="text-sm font-semibold text-blue-600 hover:underline">View All</a>
+              </div>
+              
+              <div className="overflow-x-auto">
+                {loading ? (
+                  <div className="p-8 text-center text-slate-500 font-medium animate-pulse">Loading live dashboard data...</div>
+                ) : error ? (
+                  <div className="p-8 text-center text-red-500 font-medium">Error linking database: {error}</div>
+                ) : articles.length === 0 ? (
+                  <div className="p-8 text-center text-slate-500 font-medium">No articles in database yet. Add your first piece of news!</div>
+                ) : (
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-50 text-xs font-semibold text-slate-500 uppercase border-b border-slate-100">
+                        <th className="p-4">Title</th>
+                        <th className="p-4">Category</th>
+                        <th className="p-4">Status</th>
+                        <th className="p-4">Views</th>
+                        <th className="p-4">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
+                      {articles.map((article) => (
+                        <tr key={article._id} className="hover:bg-slate-50/70 transition">
+                          <td className="p-4 font-medium text-slate-900 max-w-[280px] flex items-center space-x-3">
+                            {article.imageUrl && (
+                              <img 
+                                src={article.imageUrl} 
+                                alt={article.title} 
+                                className="w-10 h-10 object-cover rounded-lg flex-shrink-0 bg-slate-100"
+                              />
+                            )}
+                            <span className="truncate">{article.title}</span>
+                          </td>
+                          <td className="p-4">
+                            <span className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded font-medium capitalize">
+                              {article.category || 'General'}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <span className={`text-xs px-2 py-1 rounded font-medium ${
+                              article.status === 'Published' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                            }`}>
+                              {article.status || 'Published'}
+                            </span>
+                          </td>
+                          <td className="p-4 text-slate-500">
+                            {article.views !== undefined ? article.views : 0}
+                          </td>
+                          <td className="p-4 text-slate-500 whitespace-nowrap">
+                            {article.createdAt ? new Date(article.createdAt).toLocaleDateString('en-GB') : 'N/A'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Actions Panel */}
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+              <h4 className="font-bold text-slate-800 mb-2">Quick Actions</h4>
+              
+              <div className="flex items-center space-x-4 p-3 border border-slate-100 rounded-xl hover:bg-slate-50 transition cursor-pointer">
+                <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg text-sm">✏️</div>
+                <div>
+                  <h5 className="text-sm font-semibold text-slate-800">Add New Article</h5>
+                  <p className="text-xs text-slate-400 mt-0.5">Create a new news article</p>
                 </div>
               </div>
-            ))}
+            </div>
+
           </div>
-        )}
-      </div>
+
+        </div>
+      </main>
     </div>
   );
 }
