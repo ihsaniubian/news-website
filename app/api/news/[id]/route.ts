@@ -1,33 +1,80 @@
-import { NextResponse } from "next/server";
+export const dynamic = 'force-dynamic';
 
-// 1. EDIT / UPDATE NEWS (PUT)
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  const id = params.id;
-  const body = await request.json();
-  const { title, content, metaTitle, metaDescription } = body;
+import { NextResponse } from 'next/server';
+import { connectDB } from '@/lib/mongodb';
+import News from '@/models/News';
 
-  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-
+// 1. GET SINGLE ARTICLE (For Detail Page)
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    // TODO: Yahan apni Database Update query likhein (Prisma, Mongoose, ya SQL)
-    // Example: await db.news.update({ data: { title, slug, content... } })
+    await connectDB();
+    const { id } = await params; // Next.js 15 async params fix
 
-    return NextResponse.json({ success: true, message: `News ${id} updated successfully!`, slug });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    const article = await News.findById(id);
+
+    if (!article) {
+      return NextResponse.json({ error: 'Article not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(article, { status: 200 });
+  } catch (error) {
+    console.error('Error fetching article:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
-// 2. DELETE NEWS (DELETE)
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  const id = params.id;
-
+// 2. PUT (UPDATE ARTICLE - WITH NEXT.JS 15 FIX)
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    // TODO: Yahan apni Database Delete query likhein
-    // Example: await db.news.delete({ where: { id } })
+    await connectDB();
+    const { id } = await params; // Next.js 15 async params fix
+    
+    const body = await request.json();
 
-    return NextResponse.json({ success: true, message: `News ${id} deleted successfully!` });
+    const updatedArticle = await News.findByIdAndUpdate(
+      id,
+      { $set: body },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedArticle) {
+      return NextResponse.json({ error: 'Article not found to update' }, { status: 404 });
+    }
+
+    return NextResponse.json(
+      { message: 'Article updated successfully', data: updatedArticle },
+      { status: 200 }
+  );
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error('Error updating article:', error);
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+// 3. DELETE ARTICLE
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    await connectDB();
+    const { id } = await params; // Next.js 15 async params fix
+
+    const deletedArticle = await News.findByIdAndDelete(id);
+
+    if (!deletedArticle) {
+      return NextResponse.json({ error: 'Article not found to delete' }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: 'Article deleted successfully' }, { status: 200 });
+  } catch (error) {
+    console.error('Error deleting article:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
