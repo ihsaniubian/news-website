@@ -64,7 +64,7 @@ export default async function HomePage() {
           /* News Grid Layout */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {newsList.map((article: any) => (
-              <NewsCard key={article._id} article={article} />
+              <NewsCard key={article._id} post={article} />
             ))}
           </div>
         )}
