@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-export default function AdUnit({ adKey, id }: { adKey: string, id: string }) {
+export default function AdUnit({ adKey, id, width, height }: { adKey: string, id: string, width: number, height: number }) {
   useEffect(() => {
     const container = document.getElementById(id);
     if (container && !container.hasChildNodes()) {
@@ -13,16 +13,15 @@ export default function AdUnit({ adKey, id }: { adKey: string, id: string }) {
         atOptions = {
           'key' : '${adKey}',
           'format' : 'iframe',
-          'height' : ${id.includes('mid') ? 250 : 90},
-          'width' : ${id.includes('mid') ? 300 : 728},
+          'height' : ${height},
+          'width' : ${width},
           'params' : {}
         };
       `;
-      
       container.appendChild(config);
       container.appendChild(script);
     }
-  }, [adKey, id]);
+  }, [adKey, id, width, height]);
 
   return <div id={id} className="z-10"></div>;
 }

@@ -9,7 +9,6 @@ export default function HomePage() {
   const [newsList, setNewsList] = useState([]);
 
   useEffect(() => {
-    // Client-side par data fetch karne ke liye
     fetch('/api/news')
       .then((res) => res.json())
       .then((data) => setNewsList(data))
@@ -27,19 +26,19 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* AD SPOT 1 */}
+      {/* AD SPOT 1 - Corrected Props */}
       <div className="max-w-7xl mx-auto px-6 mt-6 flex justify-center">
         <div className="w-full max-w-[728px] min-h-[90px] bg-[#12151D] border border-[#2a2e38] rounded-xl flex items-center justify-center relative">
-          <AdUnit adKey="2212f5dc5b48b4407de6172af0479e77" id="ad-top" />
+          <AdUnit adKey="2212f5dc5b48b4407de6172af0479e77" id="ad-top" width={728} height={90} />
         </div>
       </div>
 
       <main className="max-w-7xl mx-auto px-6 py-12">
         <h2 className="text-xl font-bold mb-8 border-l-4 border-blue-500 pl-4">Latest Headlines</h2>
 
-        {/* AD SPOT 2 */}
+        {/* AD SPOT 2 - Corrected Props */}
         <div className="w-full max-w-[728px] mx-auto min-h-[280px] mb-8 bg-[#12151D] border border-[#2a2e38] rounded-xl flex items-center justify-center relative p-4">
-          <AdUnit adKey="63ea9891a4e05ca6b508928908866ef7" id="ad-mid" />
+          <AdUnit adKey="63ea9891a4e05ca6b508928908866ef7" id="ad-mid" width={300} height={250} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -49,7 +48,6 @@ export default function HomePage() {
         </div>
       </main>
 
-      {/* FOOTER WITH NEW LINKS */}
       <footer className="py-8 text-center text-xs text-[#9CA3AF] border-t border-[#2a2e38]">
         <div className="flex justify-center gap-6 mb-4">
           <Link href="/privacy-policy" className="hover:text-blue-400 transition">Privacy Policy</Link>
