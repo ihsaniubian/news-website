@@ -57,22 +57,26 @@ export default async function HomePage() {
           {/* ⚡ Adsterra Render Container */}
           <div id="container-2212f5dc5b48b4407de6172af0479e77" className="z-10"></div>
           
-          {/* ⚡ Adsterra Script Placement 1 (ACTIVE) */}
+          {/* ⚡ 100% Working Script Injection */}
           <Script id="adsterra-top-banner" strategy="afterInteractive">
             {`
-              window.atOptions = {
-                'key' : '2212f5dc5b48b4407de6172af0479e77',
-                'format' : 'iframe',
-                'height' : 90,
-                'width' : 728,
-                'params' : {}
-              };
+              if (!window.adsterra_initialized) {
+                window.atOptions = {
+                  'key' : '2212f5dc5b48b4407de6172af0479e77',
+                  'format' : 'iframe',
+                  'height' : 90,
+                  'width' : 728,
+                  'params' : {}
+                };
+                
+                const script = document.createElement('script');
+                script.src = 'https://www.highperformanceformat.com/2212f5dc5b48b4407de6172af0479e77/invoke.js';
+                script.async = true;
+                document.getElementById('container-2212f5dc5b48b4407de6172af0479e77')?.appendChild(script);
+                window.adsterra_initialized = true;
+              }
             `}
           </Script>
-          <Script 
-            src="https://www.highperformanceformat.com/2212f5dc5b48b4407de6172af0479e77/invoke.js" 
-            strategy="afterInteractive" 
-          />
         </div>
       </div>
 
@@ -84,7 +88,6 @@ export default async function HomePage() {
         </div>
 
         {/* 🏷️ AD SPOT 2: MID CONTENT BANNER (Headlines Ke Niche) */}
-        {/* Isay abhi humne placeholder hi rakha hai, aap baad mein doosra ad block yahan laga sakte hain */}
         <div className="w-full h-[90px] mb-8 bg-[#12151D] border border-[#2a2e38] rounded-xl flex items-center justify-center text-xs text-gray-500 overflow-hidden relative">
           <span className="absolute top-1 left-2 text-[9px] uppercase tracking-widest text-gray-600">Sponsored</span>
           <p className="animate-pulse">Content Ad Slot — Ready for Adsterra</p>
