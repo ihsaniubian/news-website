@@ -49,18 +49,17 @@ export default async function HomePage() {
         </div>
       </header>
 
-      {/* 🏷️ AD SPOT 1: TOP BANNER (Header Ke Bilkul Niche) */}
+      {/* 🏷️ AD SPOT 1: TOP BANNER (Header Ke Bilkul Niche - XM Trade) */}
       <div className="max-w-7xl mx-auto px-6 mt-6 flex justify-center">
         <div className="w-full max-w-[728px] min-h-[90px] bg-[#12151D] border border-[#2a2e38] rounded-xl flex flex-col items-center justify-center text-xs text-gray-500 overflow-hidden relative">
           <span className="absolute top-1 left-2 text-[9px] uppercase tracking-widest text-gray-600">Advertisement</span>
           
-          {/* ⚡ Adsterra Render Container */}
+          {/* ⚡ Adsterra Render Container 1 */}
           <div id="container-2212f5dc5b48b4407de6172af0479e77" className="z-10"></div>
           
-          {/* ⚡ 100% Working Script Injection */}
           <Script id="adsterra-top-banner" strategy="afterInteractive">
             {`
-              if (!window.adsterra_initialized) {
+              if (!window.adsterra_initialized_1) {
                 window.atOptions = {
                   'key' : '2212f5dc5b48b4407de6172af0479e77',
                   'format' : 'iframe',
@@ -73,7 +72,7 @@ export default async function HomePage() {
                 script.src = 'https://www.highperformanceformat.com/2212f5dc5b48b4407de6172af0479e77/invoke.js';
                 script.async = true;
                 document.getElementById('container-2212f5dc5b48b4407de6172af0479e77')?.appendChild(script);
-                window.adsterra_initialized = true;
+                window.adsterra_initialized_1 = true;
               }
             `}
           </Script>
@@ -87,10 +86,34 @@ export default async function HomePage() {
           <p className="text-xs text-[#9CA3AF]">Showing newest articles</p>
         </div>
 
-        {/* 🏷️ AD SPOT 2: MID CONTENT BANNER (Headlines Ke Niche) */}
-        <div className="w-full h-[90px] mb-8 bg-[#12151D] border border-[#2a2e38] rounded-xl flex items-center justify-center text-xs text-gray-500 overflow-hidden relative">
+        {/* 🏷️ AD SPOT 2: MID CONTENT BANNER (Latest Headlines Ke Niche - NEW 300x250 AD) */}
+        <div className="w-full max-w-[728px] mx-auto min-h-[280px] mb-8 bg-[#12151D] border border-[#2a2e38] rounded-xl flex flex-col items-center justify-center text-xs text-gray-500 overflow-hidden relative p-4">
           <span className="absolute top-1 left-2 text-[9px] uppercase tracking-widest text-gray-600">Sponsored</span>
-          <p className="animate-pulse">Content Ad Slot — Ready for Adsterra</p>
+          
+          {/* ⚡ Adsterra Render Container 2 (300x250) */}
+          <div id="container-63ea9891a4e05ca6b508928908866ef7" className="z-10 mt-2"></div>
+          
+          <Script id="adsterra-mid-banner" strategy="afterInteractive">
+            {`
+              if (!window.adsterra_initialized_2) {
+                window.atOptions2 = {
+                  'key' : '63ea9891a4e05ca6b508928908866ef7',
+                  'format' : 'iframe',
+                  'height' : 250,
+                  'width' : 300,
+                  'params' : {}
+                };
+                
+                window.atOptions = window.atOptions2;
+
+                const script = document.createElement('script');
+                script.src = 'https://www.highperformanceformat.com/63ea9891a4e05ca6b508928908866ef7/invoke.js';
+                script.async = true;
+                document.getElementById('container-63ea9891a4e05ca6b508928908866ef7')?.appendChild(script);
+                window.adsterra_initialized_2 = true;
+              }
+            `}
+          </Script>
         </div>
 
         {newsList.length === 0 ? (
