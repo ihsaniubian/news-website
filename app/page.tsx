@@ -3,20 +3,16 @@ export const dynamic = 'force-dynamic';
 import { connectDB } from '@/lib/mongodb';
 import News from '@/models/News';
 import NewsCard from '@/components/NewsCard';
-import Link from 'next/link'; // Import Link component for routing
-import Script from 'next/script'; // Import Next.js Script component for Ads
+import Link from 'next/link';
+import Script from 'next/script';
 
-// Database se latest news fetch karne ka function
 async function getLatestNews() {
   try {
     await connectDB();
-    // Database se latest 6 news records fetch karein
     const newsData = await News.find({ published: true })
       .sort({ createdAt: -1 })
       .limit(6)
       .lean();
-
-    // Server components ke liye Mongoose IDs ko safe string mein convert karein
     return JSON.parse(JSON.stringify(newsData));
   } catch (error) {
     console.error("Homepage data fetching error:", error);
@@ -49,33 +45,11 @@ export default async function HomePage() {
         </div>
       </header>
 
-      {/* 🏷️ AD SPOT 1: TOP BANNER (Header Ke Bilkul Niche - XM Trade) */}
+      {/* 🏷️ AD SPOT 1: TOP BANNER */}
       <div className="max-w-7xl mx-auto px-6 mt-6 flex justify-center">
         <div className="w-full max-w-[728px] min-h-[90px] bg-[#12151D] border border-[#2a2e38] rounded-xl flex flex-col items-center justify-center text-xs text-gray-500 overflow-hidden relative">
           <span className="absolute top-1 left-2 text-[9px] uppercase tracking-widest text-gray-600">Advertisement</span>
-          
-          {/* ⚡ Adsterra Render Container 1 */}
           <div id="container-2212f5dc5b48b4407de6172af0479e77" className="z-10"></div>
-          
-          <Script id="adsterra-top-banner" strategy="afterInteractive">
-            {`
-              if (!window.adsterra_initialized_1) {
-                window.atOptions = {
-                  'key' : '2212f5dc5b48b4407de6172af0479e77',
-                  'format' : 'iframe',
-                  'height' : 90,
-                  'width' : 728,
-                  'params' : {}
-                };
-                
-                const script = document.createElement('script');
-                script.src = 'https://www.highperformanceformat.com/2212f5dc5b48b4407de6172af0479e77/invoke.js';
-                script.async = true;
-                document.getElementById('container-2212f5dc5b48b4407de6172af0479e77')?.appendChild(script);
-                window.adsterra_initialized_1 = true;
-              }
-            `}
-          </Script>
         </div>
       </div>
 
@@ -86,44 +60,17 @@ export default async function HomePage() {
           <p className="text-xs text-[#9CA3AF]">Showing newest articles</p>
         </div>
 
-        {/* 🏷️ AD SPOT 2: MID CONTENT BANNER (Latest Headlines Ke Niche - NEW 300x250 AD) */}
+        {/* 🏷️ AD SPOT 2: MID CONTENT BANNER */}
         <div className="w-full max-w-[728px] mx-auto min-h-[280px] mb-8 bg-[#12151D] border border-[#2a2e38] rounded-xl flex flex-col items-center justify-center text-xs text-gray-500 overflow-hidden relative p-4">
           <span className="absolute top-1 left-2 text-[9px] uppercase tracking-widest text-gray-600">Sponsored</span>
-          
-          {/* ⚡ Adsterra Render Container 2 (300x250) */}
           <div id="container-63ea9891a4e05ca6b508928908866ef7" className="z-10 mt-2"></div>
-          
-          <Script id="adsterra-mid-banner" strategy="afterInteractive">
-            {`
-              if (!window.adsterra_initialized_2) {
-                window.atOptions2 = {
-                  'key' : '63ea9891a4e05ca6b508928908866ef7',
-                  'format' : 'iframe',
-                  'height' : 250,
-                  'width' : 300,
-                  'params' : {}
-                };
-                
-                window.atOptions = window.atOptions2;
-
-                const script = document.createElement('script');
-                script.src = 'https://www.highperformanceformat.com/63ea9891a4e05ca6b508928908866ef7/invoke.js';
-                script.async = true;
-                document.getElementById('container-63ea9891a4e05ca6b508928908866ef7')?.appendChild(script);
-                window.adsterra_initialized_2 = true;
-              }
-            `}
-          </Script>
         </div>
 
         {newsList.length === 0 ? (
-          /* Empty State */
           <div className="text-center py-20 border border-dashed border-[#2a2e38] rounded-2xl bg-[#12151D]">
             <p className="text-[#9CA3AF] font-medium">No articles published yet.</p>
-            <p className="text-xs text-slate-500 mt-1">Check back later or add content from the admin dashboard.</p>
           </div>
         ) : (
-          /* News Grid Layout */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {newsList.map((article: any) => (
               <NewsCard key={article._id} post={article} />
@@ -132,24 +79,40 @@ export default async function HomePage() {
         )}
       </main>
 
+      {/* ⚡ MASTER SCRIPT FOR BOTH ADS */}
+      <Script id="adsterra-master-script" strategy="afterInteractive">
+        {`
+          (function() {
+            // Ad 1
+            window.atOptions1 = {
+              'key' : '2212f5dc5b48b4407de6172af0479e77',
+              'format' : 'iframe',
+              'height' : 90,
+              'width' : 728,
+              'params' : {}
+            };
+            const s1 = document.createElement('script');
+            s1.src = 'https://www.highperformanceformat.com/2212f5dc5b48b4407de6172af0479e77/invoke.js';
+            document.getElementById('container-2212f5dc5b48b4407de6172af0479e77').appendChild(s1);
+
+            // Ad 2
+            window.atOptions2 = {
+              'key' : '63ea9891a4e05ca6b508928908866ef7',
+              'format' : 'iframe',
+              'height' : 250,
+              'width' : 300,
+              'params' : {}
+            };
+            const s2 = document.createElement('script');
+            s2.src = 'https://www.highperformanceformat.com/63ea9891a4e05ca6b508928908866ef7/invoke.js';
+            document.getElementById('container-63ea9891a4e05ca6b508928908866ef7').appendChild(s2);
+          })();
+        `}
+      </Script>
+
       {/* 📌 FOOTER */}
       <footer className="bg-[#12151D] border-t border-[#2a2e38] py-8 mt-20 text-center text-xs text-[#9CA3AF]">
-        <p className="mb-4">© 2026 Khabarnama Digital Network. All Rights Reserved.</p>
-        
-        {/* 🌟 GOOGLE ADSENSE LEGAL LINKS */}
-        <div className="flex justify-center items-center space-x-4 text-[11px] font-medium tracking-wide text-gray-400">
-          <Link href="/privacy-policy" className="hover:text-blue-400 hover:underline transition">
-            Privacy Policy
-          </Link>
-          <span className="text-slate-700">•</span>
-          <Link href="/terms" className="hover:text-blue-400 hover:underline transition">
-            Terms & Conditions
-          </Link>
-          <span className="text-slate-700">•</span>
-          <Link href="/contact" className="hover:text-blue-400 hover:underline transition">
-            Contact Us
-          </Link>
-        </div>
+        <p>© 2026 Khabarnama Digital Network. All Rights Reserved.</p>
       </footer>
     </div>
   );
