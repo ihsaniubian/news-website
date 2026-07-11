@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 export default function AddNews() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
   // Form states matching your API body parameters
@@ -21,6 +22,34 @@ export default function AddNews() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setMessage({ type: '', text: '' });
+
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadData,
+      });
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || 'Upload failed');
+
+      setFormData((prev) => ({ ...prev, imageUrl: data.url }));
+      setMessage({ type: 'success', text: 'Image uploaded! ✅' });
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message });
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -117,17 +146,27 @@ export default function AddNews() {
               </select>
             </div>
 
-            {/* Image URL */}
+            {/* Image Upload */}
             <div className="flex flex-col space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700">Image URL *</label>
+              <label className="text-sm font-semibold text-slate-700">Article Image *</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-600 file:text-sm file:font-medium"
+              />
+              {uploading && <p className="text-xs text-blue-500">Uploading image...</p>}
+              {formData.imageUrl && !uploading && (
+                <img src={formData.imageUrl} alt="Preview" className="mt-2 h-24 w-24 object-cover rounded-lg border" />
+              )}
               <input
                 type="text"
                 name="imageUrl"
                 required
                 value={formData.imageUrl}
                 onChange={handleChange}
-                placeholder="https://example.com/image.jpg"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-500 transition text-slate-800"
+                placeholder="ya paste karo direct image URL"
+                className="w-full px-4 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-blue-500 transition text-slate-500 mt-1"
               />
             </div>
           </div>
@@ -198,7 +237,7 @@ export default function AddNews() {
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || uploading}
               className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium shadow-sm transition disabled:opacity-50"
             >
               {loading ? 'Publishing...' : 'Publish Article'}

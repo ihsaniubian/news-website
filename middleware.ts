@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const basicAuth = req.headers.get("authorization");
 
   if (basicAuth) {
@@ -18,6 +18,12 @@ export function middleware(req: NextRequest) {
   });
 }
 
+// Routes matching ko handle karne ka behtar tarika
 export const config = {
-  matcher: ["/admin/:path*", "/api/news/:path*"],
+  matcher: [
+    '/admin/:path*', 
+    '/api/news/:path*',
+    '/add-news/:path*',
+    '/edit-news/:path*'
+  ],
 };

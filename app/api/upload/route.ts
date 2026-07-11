@@ -1,29 +1,31 @@
-import { NextResponse } from "next/server";
-import { v2 as cloudinary } from "cloudinary";
+import { NextRequest, NextResponse } from 'next/server';
+import { v2 as cloudinary } from 'cloudinary';
 
-// Cloudinary initialization using environment variables
+console.log('DEBUG cloud_name:', process.env.CLOUDINARY_CLOUD_NAME);
+console.log('DEBUG api_key:', process.env.CLOUDINARY_API_KEY);
+console.log('DEBUG api_secret exists:', !!process.env.CLOUDINARY_API_SECRET);
+
 cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLIENT_CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const formData = await request.formData();
-    const file = formData.get("file") as File;
+    const formData = await req.formData();
+    const file = formData.get('file') as File;
 
     if (!file) {
-      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Cloudinary Stream upload method
-    const uploadResult = await new Promise((resolve, reject) => {
+    const result = await new Promise((resolve, reject) => {
       cloudinary.uploader.upload_stream(
-        { folder: "news_website_uploads" },
+        { folder: 'khabarnama' },
         (error, result) => {
           if (error) reject(error);
           else resolve(result);
@@ -31,12 +33,9 @@ export async function POST(request: Request) {
       ).end(buffer);
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      url: (uploadResult as any).secure_url 
-    });
-
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ url: (result as any).secure_url });
+  } catch (error) {
+    console.error('Upload error:', error);
+    return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
   }
 }

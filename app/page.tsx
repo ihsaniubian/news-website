@@ -3,6 +3,8 @@ export const dynamic = 'force-dynamic';
 import { connectDB } from '@/lib/mongodb';
 import News from '@/models/News';
 import NewsCard from '@/components/NewsCard';
+import Link from 'next/link'; // Import Link component for routing
+import Script from 'next/script'; // Import Next.js Script component for Ads
 
 // Database se latest news fetch karne ka function
 async function getLatestNews() {
@@ -47,11 +49,45 @@ export default async function HomePage() {
         </div>
       </header>
 
+      {/* 🏷️ AD SPOT 1: TOP BANNER (Header Ke Bilkul Niche) */}
+      <div className="max-w-7xl mx-auto px-6 mt-6 flex justify-center">
+        <div className="w-full max-w-[728px] min-h-[90px] bg-[#12151D] border border-[#2a2e38] rounded-xl flex flex-col items-center justify-center text-xs text-gray-500 overflow-hidden relative">
+          <span className="absolute top-1 left-2 text-[9px] uppercase tracking-widest text-gray-600">Advertisement</span>
+          
+          {/* ⚡ Adsterra Render Container */}
+          <div id="container-2212f5dc5b48b4407de6172af0479e77" className="z-10"></div>
+          
+          {/* ⚡ Adsterra Script Placement 1 (ACTIVE) */}
+          <Script id="adsterra-top-banner" strategy="afterInteractive">
+            {`
+              window.atOptions = {
+                'key' : '2212f5dc5b48b4407de6172af0479e77',
+                'format' : 'iframe',
+                'height' : 90,
+                'width' : 728,
+                'params' : {}
+              };
+            `}
+          </Script>
+          <Script 
+            src="https://www.highperformanceformat.com/2212f5dc5b48b4407de6172af0479e77/invoke.js" 
+            strategy="afterInteractive" 
+          />
+        </div>
+      </div>
+
       {/* 🚀 MAIN BODY */}
       <main className="max-w-7xl mx-auto px-6 py-12">
         <div className="mb-8 flex items-center justify-between border-l-4 border-blue-500 pl-4">
           <h2 className="text-xl font-bold tracking-wide text-white">Latest Headlines</h2>
           <p className="text-xs text-[#9CA3AF]">Showing newest articles</p>
+        </div>
+
+        {/* 🏷️ AD SPOT 2: MID CONTENT BANNER (Headlines Ke Niche) */}
+        {/* Isay abhi humne placeholder hi rakha hai, aap baad mein doosra ad block yahan laga sakte hain */}
+        <div className="w-full h-[90px] mb-8 bg-[#12151D] border border-[#2a2e38] rounded-xl flex items-center justify-center text-xs text-gray-500 overflow-hidden relative">
+          <span className="absolute top-1 left-2 text-[9px] uppercase tracking-widest text-gray-600">Sponsored</span>
+          <p className="animate-pulse">Content Ad Slot — Ready for Adsterra</p>
         </div>
 
         {newsList.length === 0 ? (
@@ -72,7 +108,22 @@ export default async function HomePage() {
 
       {/* 📌 FOOTER */}
       <footer className="bg-[#12151D] border-t border-[#2a2e38] py-8 mt-20 text-center text-xs text-[#9CA3AF]">
-        <p>© 2026 Khabarnama Digital Network. All Rights Reserved.</p>
+        <p className="mb-4">© 2026 Khabarnama Digital Network. All Rights Reserved.</p>
+        
+        {/* 🌟 GOOGLE ADSENSE LEGAL LINKS */}
+        <div className="flex justify-center items-center space-x-4 text-[11px] font-medium tracking-wide text-gray-400">
+          <Link href="/privacy-policy" className="hover:text-blue-400 hover:underline transition">
+            Privacy Policy
+          </Link>
+          <span className="text-slate-700">•</span>
+          <Link href="/terms" className="hover:text-blue-400 hover:underline transition">
+            Terms & Conditions
+          </Link>
+          <span className="text-slate-700">•</span>
+          <Link href="/contact" className="hover:text-blue-400 hover:underline transition">
+            Contact Us
+          </Link>
+        </div>
       </footer>
     </div>
   );

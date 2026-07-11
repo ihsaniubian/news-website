@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 // TypeScript Interface matching your MongoDB News Schema precisely
 interface Article {
@@ -8,8 +9,9 @@ interface Article {
   title: string;
   category: string;
   imageUrl?: string;
+  image?: string; // Added safe backup fallback
   status?: string; 
-  views?: number;
+  views?: any; // Changed to any safely to handle String or Number from DB
   createdAt?: string;
 }
 
@@ -19,24 +21,63 @@ export default function AdminDashboard() {
   const [error, setError] = useState<string | null>(null);
 
   // Fetch data from your freshly completed API
-  useEffect(() => {
-    async function fetchNews() {
-      try {
-        const response = await fetch('/api/news');
-        if (!response.ok) {
-          throw new Error('Failed to fetch data from live API');
-        }
-        const data = await response.json();
-        setArticles(data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+  const fetchNews = async () => {
+    try {
+      const response = await fetch('/api/news');
+      if (!response.ok) {
+        throw new Error('Failed to fetch data from live API');
       }
+      const data = await response.json();
+      setArticles(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
+  };
 
+  useEffect(() => {
     fetchNews();
   }, []);
+
+  // ==========================================
+  // DYNAMIC STATS CALCULATIONS (FIXED DATA TYPES)
+  // ==========================================
+  // Saare articles ke views ko plus karne ke liye logic (Number conversion lagayi hai)
+  const totalViews = articles.reduce((acc, curr) => {
+    const viewCount = curr.views ? Number(curr.views) : 0;
+    return acc + (isNaN(viewCount) ? 0 : viewCount);
+  }, 0);
+
+  // 💰 STRICT FORMULA: 10 Views = $1 (Yaani per view $0.10)
+  const earningRate = 0.10; 
+  const totalEarnings = totalViews * earningRate;
+
+  // ==========================================
+  // DELETE HANDLER FUNCTION
+  // ==========================================
+  const handleDelete = async (id: string, title: string) => {
+    const confirmDelete = window.confirm(`Kya aap waqai is article ko delete karna chahte hain?\n"${title}"`);
+    
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(`/api/news/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        alert('Article successfully delete ho gaya!');
+        setArticles(articles.filter(article => article._id !== id));
+      } else {
+        const data = await response.json();
+        alert(`Delete failed: ${data.error || 'Unknown error occurred'}`);
+      }
+    } catch (err) {
+      console.error("Delete request error:", err);
+      alert('Network error! Article delete nahi ho saka.');
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc]">
@@ -44,7 +85,7 @@ export default function AdminDashboard() {
       {/* ================= SIDEBAR ================= */}
       <aside className="w-64 bg-[#1e293b] text-slate-300 flex flex-col hidden md:flex">
         <div className="p-6 border-b border-slate-700">
-          <h1 className="text-xl font-bold text-white tracking-wide">Khabarnama</h1>
+          <h1 className="text-xl font-bold text-white tracking-wide">Breaking-X</h1>
           <p className="text-xs text-slate-400 mt-1">Pakistan & World News</p>
         </div>
 
@@ -57,10 +98,10 @@ export default function AdminDashboard() {
             <span className="w-5 text-center">📄</span>
             <span>All Articles</span>
           </a>
-          <a href="#" className="flex items-center space-x-3 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-lg transition">
+          <Link href="/admin/add-news" className="flex items-center space-x-3 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-lg transition">
             <span className="w-5 text-center">➕</span>
             <span>Add New Article</span>
-          </a>
+          </Link>
           <a href="#" className="flex items-center space-x-3 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-lg transition">
             <span className="w-5 text-center">📁</span>
             <span>Categories</span>
@@ -105,13 +146,15 @@ export default function AdminDashboard() {
               <h2 className="text-2xl font-bold text-slate-800">Dashboard</h2>
               <p className="text-sm text-slate-500 mt-1">Welcome back, Admin! Here's what's happening with your news website.</p>
             </div>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center space-x-2 shadow-sm transition">
+            <Link href="/admin/add-news" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center space-x-2 shadow-sm transition">
               <span>+ Add New Article</span>
-            </button>
+            </Link>
           </div>
 
-          {/* Dynamic Stats Card */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Dynamic Stats Cards Container */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            {/* Total Articles Card */}
             <div className="bg-white p-6 rounded-xl border border-slate-200 flex items-start justify-between shadow-sm">
               <div className="space-y-2">
                 <p className="text-sm text-slate-500 font-medium">Total Articles</p>
@@ -121,14 +164,28 @@ export default function AdminDashboard() {
               <div className="p-3 bg-blue-50 text-blue-600 rounded-lg text-xl">📄</div>
             </div>
 
+            {/* Total Views Card */}
             <div className="bg-white p-6 rounded-xl border border-slate-200 flex items-start justify-between shadow-sm">
               <div className="space-y-2">
                 <p className="text-sm text-slate-500 font-medium">Total Views</p>
-                <h3 className="text-3xl font-bold text-slate-800">0</h3>
+                <h3 className="text-3xl font-bold text-slate-800">{loading ? '...' : totalViews.toLocaleString()}</h3>
                 <span className="inline-block text-xs text-slate-400 bg-slate-50 px-2 py-0.5 rounded">Analytics</span>
               </div>
               <div className="p-3 bg-green-50 text-green-600 rounded-lg text-xl">👁️</div>
             </div>
+
+            {/* Total Earnings Card (10 Views = $1) */}
+            <div className="bg-white p-6 rounded-xl border border-slate-200 flex items-start justify-between shadow-sm">
+              <div className="space-y-2">
+                <p className="text-sm text-slate-500 font-medium">Total Earnings</p>
+                <h3 className="text-3xl font-bold text-emerald-600">
+                  {loading ? '...' : `$${totalEarnings.toFixed(2)}`}
+                </h3>
+                <span className="inline-block text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded">Estimated Revenue</span>
+              </div>
+              <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg text-xl">💰</div>
+            </div>
+
           </div>
 
           {/* Table & Quick Actions Block */}
@@ -157,41 +214,61 @@ export default function AdminDashboard() {
                         <th className="p-4">Status</th>
                         <th className="p-4">Views</th>
                         <th className="p-4">Date</th>
+                        <th className="p-4 text-center">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
-                      {articles.map((article) => (
-                        <tr key={article._id} className="hover:bg-slate-50/70 transition">
-                          <td className="p-4 font-medium text-slate-900 max-w-[280px] flex items-center space-x-3">
-                            {article.imageUrl && (
-                              <img 
-                                src={article.imageUrl} 
-                                alt={article.title} 
-                                className="w-10 h-10 object-cover rounded-lg flex-shrink-0 bg-slate-100"
-                              />
-                            )}
-                            <span className="truncate">{article.title}</span>
-                          </td>
-                          <td className="p-4">
-                            <span className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded font-medium capitalize">
-                              {article.category || 'General'}
-                            </span>
-                          </td>
-                          <td className="p-4">
-                            <span className={`text-xs px-2 py-1 rounded font-medium ${
-                              article.status === 'Published' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
-                            }`}>
-                              {article.status || 'Published'}
-                            </span>
-                          </td>
-                          <td className="p-4 text-slate-500">
-                            {article.views !== undefined ? article.views : 0}
-                          </td>
-                          <td className="p-4 text-slate-500 whitespace-nowrap">
-                            {article.createdAt ? new Date(article.createdAt).toLocaleDateString('en-GB') : 'N/A'}
-                          </td>
-                        </tr>
-                      ))}
+                      {articles.map((article) => {
+                        const displayImg = article.imageUrl || article.image;
+                        return (
+                          <tr key={article._id} className="hover:bg-slate-50/70 transition">
+                            <td className="p-4 font-medium text-slate-900 max-w-[240px] flex items-center space-x-3">
+                              {displayImg && (
+                                <img 
+                                  src={displayImg} 
+                                  alt={article.title} 
+                                  className="w-10 h-10 object-cover rounded-lg flex-shrink-0 bg-slate-100"
+                                />
+                              )}
+                              <span className="truncate">{article.title}</span>
+                            </td>
+                            <td className="p-4">
+                              <span className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded font-medium capitalize">
+                                {article.category || 'General'}
+                              </span>
+                            </td>
+                            <td className="p-4">
+                              <span className={`text-xs px-2 py-1 rounded font-medium ${
+                                article.status === 'Published' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                              }`}>
+                                {article.status || 'Published'}
+                              </span>
+                            </td>
+                            <td className="p-4 text-slate-500">
+                              {article.views !== undefined ? article.views : 0}
+                            </td>
+                            <td className="p-4 text-slate-500 whitespace-nowrap">
+                              {article.createdAt ? new Date(article.createdAt).toLocaleDateString('en-GB') : 'N/A'}
+                            </td>
+                            <td className="p-4 text-center space-x-2 whitespace-nowrap">
+                              <Link 
+                                href={`/admin/edit-news/${article._id}`}
+                                className="inline-flex items-center justify-center p-1.5 bg-amber-50 text-amber-600 hover:bg-amber-100 rounded transition mr-1"
+                                title="Edit Article"
+                              >
+                                ✏️
+                              </Link>
+                              <button 
+                                onClick={() => handleDelete(article._id, article.title)}
+                                className="inline-flex items-center justify-center p-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded transition"
+                                title="Delete Article"
+                              >
+                                🗑️
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 )}
@@ -202,13 +279,13 @@ export default function AdminDashboard() {
             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
               <h4 className="font-bold text-slate-800 mb-2">Quick Actions</h4>
               
-              <div className="flex items-center space-x-4 p-3 border border-slate-100 rounded-xl hover:bg-slate-50 transition cursor-pointer">
-                <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg text-sm">✏️</div>
+              <Link href="/admin/add-news" className="flex items-center space-x-4 p-3 border border-slate-100 rounded-xl hover:bg-slate-50 transition cursor-pointer">
+                <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg text-sm">➕</div>
                 <div>
                   <h5 className="text-sm font-semibold text-slate-800">Add New Article</h5>
                   <p className="text-xs text-slate-400 mt-0.5">Create a new news article</p>
                 </div>
-              </div>
+              </Link>
             </div>
 
           </div>
