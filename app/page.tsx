@@ -1,13 +1,63 @@
-'use client'; // Client component zaroori hai ads ke liye
+'use client';
 
 import { useEffect, useState } from 'react';
-import AdUnit from '@/components/AdUnit';
+import Image from 'next/image';
 import NewsCard from '@/components/NewsCard';
 import Link from 'next/link';
 
 export default function HomePage() {
   const [newsList, setNewsList] = useState([]);
 
+  // 🔌 Ad Network Scripts Injector
+  useEffect(() => {
+    // === 1. TOP AD (728x90) ===
+    (window as any).atOptions = {
+      'key' : '2212f5dc5b48b4407de6172af0479e77',
+      'format' : 'iframe',
+      'height' : 90,
+      'width' : 728,
+      'params' : {}
+    };
+
+    const scriptTop = document.createElement('script');
+    scriptTop.src = "https://www.highperformanceformat.com/2212f5dc5b48b4407de6172af0479e77/invoke.js";
+    scriptTop.async = true;
+
+    const topAdContainer = document.getElementById('header-ad-placement');
+    if (topAdContainer) {
+      topAdContainer.appendChild(scriptTop);
+    }
+
+    // === 2. MID AD / KHABAR_NICHE AD (300x250) ===
+    const midAtOptions = {
+      'key' : '63ea9891a4e05ca6b508928908866ef7',
+      'format' : 'iframe',
+      'height' : 250,
+      'width' : 300,
+      'params' : {}
+    };
+
+    const scriptMid = document.createElement('script');
+    scriptMid.src = "https://www.highperformanceformat.com/63ea9891a4e05ca6b508928908866ef7/invoke.js";
+    scriptMid.async = true;
+
+    scriptMid.onload = () => {
+      (window as any).atOptions = midAtOptions;
+    };
+
+    const midAdContainer = document.getElementById('mid-ad-placement');
+    if (midAdContainer) {
+      midAdContainer.appendChild(scriptMid);
+    }
+
+    // Cleanup to prevent duplicate ads on dynamic route changes
+    return () => {
+      if (topAdContainer) topAdContainer.innerHTML = '';
+      if (midAdContainer) midAdContainer.innerHTML = '';
+    };
+  }, []);
+
+  // 📡 Fetch Latest News from MongoDB API
   useEffect(() => {
     fetch('/api/news')
       .then((res) => res.json())
@@ -17,37 +67,74 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#0B0E14] text-[#F5F5F0] font-sans">
+      
+      {/* HEADER SECTION */}
       <header className="border-b border-[#2a2e38] bg-[#12151D] py-6 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <h1 className="text-3xl font-black text-white uppercase bg-gradient-to-r from-blue-500 to-cyan-400 bg-clip-text text-transparent">
-            Khabarnama
-          </h1>
-          <span className="text-xs font-medium text-green-400 uppercase">Live Updates</span>
+        <div className="max-w-7xl mx-auto px-6 flex flex-col gap-4">
+          
+          {/* Logo and Live Status Row */}
+          <div className="flex justify-between items-center">
+            
+            {/* 🖼️ BRAND IMAGE LOGO */}
+            <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition">
+              <Image 
+                src="/logo.png" 
+                alt="Khabarnama Logo" 
+                width={180}   
+                height={50}   
+                className="object-contain max-h-[50px]"
+                priority      
+              />
+            </Link>
+
+            <span className="text-xs font-medium text-green-400 uppercase tracking-wider bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">
+              Live Updates
+            </span>
+          </div>
+
+          {/* 🎯 Header Ad Placement Slot (728x90) */}
+          <div className="flex justify-center w-full mt-2">
+            <div 
+              id="header-ad-placement" 
+              className="w-full max-w-[728px] min-h-[90px] bg-[#1a1d26]/40 border border-[#2a2e38] rounded-xl flex items-center justify-center overflow-hidden"
+            >
+              {/* Top Banner Ad automatically injects here */}
+            </div>
+          </div>
+
         </div>
       </header>
 
-      {/* AD SPOT 1 - Corrected Props */}
-      <div className="max-w-7xl mx-auto px-6 mt-6 flex justify-center">
-        <div className="w-full max-w-[728px] min-h-[90px] bg-[#12151D] border border-[#2a2e38] rounded-xl flex items-center justify-center relative">
-          <AdUnit adKey="2212f5dc5b48b4407de6172af0479e77" id="ad-top" width={728} height={90} />
-        </div>
-      </div>
-
+      {/* MAIN CONTENT CONTAINER */}
       <main className="max-w-7xl mx-auto px-6 py-12">
+        
+        {/* 🎯 Mid Ad Slot (300x250) Below Header */}
+        <div className="flex justify-center w-full mb-10">
+          <div 
+            id="mid-ad-placement" 
+            className="w-[300px] min-h-[250px] bg-[#1a1d26]/40 border border-[#2a2e38] rounded-xl flex items-center justify-center overflow-hidden"
+          >
+            {/* Box Ad automatically injects here */}
+          </div>
+        </div>
+
         <h2 className="text-xl font-bold mb-8 border-l-4 border-blue-500 pl-4">Latest Headlines</h2>
 
-        {/* AD SPOT 2 - Corrected Props */}
-        <div className="w-full max-w-[728px] mx-auto min-h-[280px] mb-8 bg-[#12151D] border border-[#2a2e38] rounded-xl flex items-center justify-center relative p-4">
-          <AdUnit adKey="63ea9891a4e05ca6b508928908866ef7" id="ad-mid" width={300} height={250} />
-        </div>
-
+        {/* Dynamic News Grid Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {newsList.map((article: any) => (
-            <NewsCard key={article._id} post={article} />
-          ))}
+          {newsList.length > 0 ? (
+            newsList.map((article: any) => (
+              <NewsCard key={article._id} post={article} />
+            ))
+          ) : (
+            <p className="text-sm text-gray-500 italic col-span-full text-center">
+              Khabarnama load ho raha hai ya koi post nahi mili...
+            </p>
+          )}
         </div>
       </main>
 
+      {/* FOOTER */}
       <footer className="py-8 text-center text-xs text-[#9CA3AF] border-t border-[#2a2e38]">
         <div className="flex justify-center gap-6 mb-4">
           <Link href="/privacy-policy" className="hover:text-blue-400 transition">Privacy Policy</Link>
