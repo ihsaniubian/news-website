@@ -75,16 +75,16 @@ export default function HomePage() {
           {/* Logo and Live Status Row */}
           <div className="flex justify-between items-center">
             
-            {/* 🖼️ BRAND IMAGE LOGO */}
+            {/* 🖼️ BRAND IMAGE LOGO (Direct URL Bypass to prevent broken image) */}
             <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition">
               <Image 
-                src="/logo.png" 
-                alt="Khabarnama Logo" 
-                width={180}   
-                height={50}   
-                className="object-contain max-h-[50px]"
-                priority      
-              />
+  src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=180&h=180&fit=crop" 
+  alt="WS Website Logo" 
+  width={80}   
+  height={80}   
+  className="object-contain max-h-[80px] rounded-lg"
+  priority      
+/>
             </Link>
 
             <span className="text-xs font-medium text-green-400 uppercase tracking-wider bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">
